@@ -53,38 +53,38 @@ CMAKE_SOURCE_DIR = /home/ubuntu/projects/lowpoly/src
 CMAKE_BINARY_DIR = /home/ubuntu/projects/lowpoly/src/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/cv_hello.dir
+# Target rules for target CMakeFiles/output.dir
 
 # All Build rule for target.
-CMakeFiles/cv_hello.dir/all:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/depend
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/build
+CMakeFiles/output.dir/all:
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/depend
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ubuntu/projects/lowpoly/src/build/CMakeFiles  1
-	@echo "Built target cv_hello"
-.PHONY : CMakeFiles/cv_hello.dir/all
+	@echo "Built target output"
+.PHONY : CMakeFiles/output.dir/all
 
 # Include target in all.
-all: CMakeFiles/cv_hello.dir/all
+all: CMakeFiles/output.dir/all
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/cv_hello.dir/rule: cmake_check_build_system
+CMakeFiles/output.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/projects/lowpoly/src/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/cv_hello.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/output.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ubuntu/projects/lowpoly/src/build/CMakeFiles 0
-.PHONY : CMakeFiles/cv_hello.dir/rule
+.PHONY : CMakeFiles/output.dir/rule
 
 # Convenience name for target.
-cv_hello: CMakeFiles/cv_hello.dir/rule
-.PHONY : cv_hello
+output: CMakeFiles/output.dir/rule
+.PHONY : output
 
 # clean rule for target.
-CMakeFiles/cv_hello.dir/clean:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/clean
-.PHONY : CMakeFiles/cv_hello.dir/clean
+CMakeFiles/output.dir/clean:
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/clean
+.PHONY : CMakeFiles/output.dir/clean
 
 # clean rule for target.
-clean: CMakeFiles/cv_hello.dir/clean
+clean: CMakeFiles/output.dir/clean
 .PHONY : clean
 
 #=============================================================================

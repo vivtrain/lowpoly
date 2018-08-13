@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd build
+make clean
+cmake .. || exit 1
+make || exit 1
+output || exit 1
+cd ..

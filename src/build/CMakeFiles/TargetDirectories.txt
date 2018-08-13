@@ -1,1 +1,1 @@
-/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/cv_hello.dir
+/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/output.dir

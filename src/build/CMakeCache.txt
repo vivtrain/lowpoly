@@ -116,7 +116,7 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=hello
+CMAKE_PROJECT_NAME:STATIC=lowpoly
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -288,6 +288,12 @@ hello_BINARY_DIR:STATIC=/home/ubuntu/projects/lowpoly/src/build
 
 //Value Computed by CMake
 hello_SOURCE_DIR:STATIC=/home/ubuntu/projects/lowpoly/src
+
+//Value Computed by CMake
+lowpoly_BINARY_DIR:STATIC=/home/ubuntu/projects/lowpoly/src/build
+
+//Value Computed by CMake
+lowpoly_SOURCE_DIR:STATIC=/home/ubuntu/projects/lowpoly/src
 
 
 ########################

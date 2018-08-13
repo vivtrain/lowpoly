@@ -99,24 +99,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named cv_hello
+# Target rules for targets named output
 
 # Build rule for target.
-cv_hello: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cv_hello
-.PHONY : cv_hello
+output: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 output
+.PHONY : output
 
 # fast build rule for target.
-cv_hello/fast:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/build
-.PHONY : cv_hello/fast
+output/fast:
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/build
+.PHONY : output/fast
 
 ocv_helloworld.o: ocv_helloworld.cc.o
 .PHONY : ocv_helloworld.o
 
 # target to build an object file
 ocv_helloworld.cc.o:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/ocv_helloworld.cc.o
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/ocv_helloworld.cc.o
 .PHONY : ocv_helloworld.cc.o
 
 ocv_helloworld.i: ocv_helloworld.cc.i
@@ -124,7 +124,7 @@ ocv_helloworld.i: ocv_helloworld.cc.i
 
 # target to preprocess a source file
 ocv_helloworld.cc.i:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/ocv_helloworld.cc.i
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/ocv_helloworld.cc.i
 .PHONY : ocv_helloworld.cc.i
 
 ocv_helloworld.s: ocv_helloworld.cc.s
@@ -132,7 +132,7 @@ ocv_helloworld.s: ocv_helloworld.cc.s
 
 # target to generate assembly for a file
 ocv_helloworld.cc.s:
-	$(MAKE) -f CMakeFiles/cv_hello.dir/build.make CMakeFiles/cv_hello.dir/ocv_helloworld.cc.s
+	$(MAKE) -f CMakeFiles/output.dir/build.make CMakeFiles/output.dir/ocv_helloworld.cc.s
 .PHONY : ocv_helloworld.cc.s
 
 # Help Target
@@ -141,8 +141,8 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... cv_hello"
 	@echo "... edit_cache"
+	@echo "... output"
 	@echo "... rebuild_cache"
 	@echo "... ocv_helloworld.o"
 	@echo "... ocv_helloworld.i"
