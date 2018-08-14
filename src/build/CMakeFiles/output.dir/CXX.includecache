@@ -6,8 +6,10 @@
 
 #IncludeRegexTransform: 
 
-/home/ubuntu/projects/lowpoly/src/ocv_helloworld.cc
+/home/ubuntu/projects/lowpoly/src/main.cc
 iostream
+-
+opencv2/core.hpp
 -
 opencv2/highgui/highgui.hpp
 -
