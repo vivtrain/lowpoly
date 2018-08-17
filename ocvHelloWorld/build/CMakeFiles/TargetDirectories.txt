@@ -1,1 +1,0 @@
-/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/cv_hello.dir

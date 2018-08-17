@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/shape.hpp>
 
 const int MAX_NEIGHBORS = 6;
 
@@ -37,19 +38,42 @@ class Node
     int numNeighbors_;
 };
 
-int main(int argc, char** argv)
+cv::Mat getPolyMask(cv::Point* vertices, int npts, int rows, int cols)
+{
+    cv::Mat mask = cv::Mat::zeros(rows, cols, CV_8U);
+    cv::fillConvexPoly(mask, vertices, npts, cv::Scalar(1));
+    return mask;
+}
+
+int main()
 {
     cv::Mat img = cv::imread("../mrbluesky.jpg", CV_LOAD_IMAGE_COLOR);
 
-    Node* nd1 = new Node(cv::Point(img.cols/2,img.rows/3), img);
-    Node* nd2 = new Node(cv::Point(img.cols/3,img.rows/2), img);
-    Node* nd3 = new Node(cv::Point(img.cols/4,img.rows/4), img);
+    const int NUM_NODES = 20;
+    Node* pixelCorners[NUM_NODES][NUM_NODES];
 
-    cv::Point lilPolyVert[3] = { nd1->pos_, nd2->pos_, nd3->pos_ };
-    cv::fillConvexPoly(img, lilPolyVert, 3, cv::mean(img));
-    // nd1->addAdjacent(nd2);
-    // nd1->addAdjacent(nd3);
-    // nd2->addAdjacent(nd3);
+    for (int c = 0; c < NUM_NODES; c++)
+        for (int r = 0; r < NUM_NODES; r++)
+             pixelCorners[c][r] = new Node(
+                                           cv::Point(c*img.cols/(NUM_NODES-1),
+                                                     r*img.rows/(NUM_NODES-1)),
+                                           img);
+
+    for (int c = 0; c < NUM_NODES - 1; c++)
+        for (int r = 0; r < NUM_NODES - 1; r++)
+        {
+            cv::Point neighbors[4];
+            neighbors[0] = pixelCorners[c  ][r  ]->pos_;
+            neighbors[1] = pixelCorners[c  ][r+1]->pos_;
+            neighbors[2] = pixelCorners[c+1][r+1]->pos_;
+            neighbors[3] = pixelCorners[c+1][r  ]->pos_;
+
+            cv::Mat mask = getPolyMask(neighbors, 4, img.rows, img.cols);
+
+            cv::Scalar avgColor = cv::mean(img, mask);
+            cv::fillConvexPoly(img, neighbors, 4, avgColor);
+        }
+
 
     cv::namedWindow("Mr. Blue Sky", CV_WINDOW_NORMAL);
     cv::resizeWindow("Mr. Blue Sky", 1000, 1000);

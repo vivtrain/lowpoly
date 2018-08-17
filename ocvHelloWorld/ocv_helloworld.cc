@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/shape.hpp>
 
 using namespace std;
 using namespace cv;

@@ -1,3 +1,0 @@
-/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/projects/lowpoly/src/build/CMakeFiles/output.dir
