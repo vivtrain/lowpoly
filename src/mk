@@ -1,8 +1,12 @@
 #!/bin/sh
 
+if [ ! -s $1  ] || [ -z $1 ]; then
+    echo "Provide a valid image path"
+    exit 1;
+fi
 cd build
 make clean
 cmake .. || exit 1
 make || exit 1
-output || exit 1
+output $1|| exit 1
 cd ..
