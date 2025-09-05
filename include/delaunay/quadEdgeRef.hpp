@@ -2,32 +2,28 @@
 #define QUAD_EDGE_REF_HPP
 
 #include <opencv2/core/types.hpp>
+#include <optional>
+#include <vector>
 
 namespace QE {
-  enum Rotations {
-    IDENTITY = 0,
-    DUAL = 1,
-    CONVERSE = 2,
-    DUAL_CONVERSE = 3,
-    N_ROTATIONS = 4,
-  };
-  struct QuadEdge; // Forward declare!
-
+  
   struct QuadEdgeRef {
-    QuadEdgeRef(
-        QuadEdge *parentQE=nullptr, int index=-1,
-        QuadEdge *nextQE=nullptr, int nextIndex=-1) :
-      parentQE(parentQE), index(index),
-      nextQE(nextQE), nextIndex(nextIndex) {}
-    QuadEdgeRef *rotation(int amount);
-    QuadEdgeRef *nextCCW();
-    
-    QuadEdge *parentQE;
-    int index;
-    QuadEdge *nextQE;
-    int nextIndex;
-    cv::Point coords;
+    inline QuadEdgeRef(QuadEdgeRef* nextCCW=nullptr, QuadEdgeRef* nextRot=nullptr)
+      : nextCCW(nextCCW), nextRot(nextRot), tailCoords(std::nullopt) {}
+    QuadEdgeRef* dual();
+    QuadEdgeRef* converse();
+    QuadEdgeRef* nextCW();
+    QuadEdgeRef* traverseCCW();
+    std::optional<cv::Point> headCoords();
+
+    QuadEdgeRef *nextCCW;
+    QuadEdgeRef *nextRot;
+    std::optional<cv::Point> tailCoords;
   };
+
+  QuadEdgeRef *makeQuadEdge(cv::Point tail, cv::Point head);
+
+  void freeAll();
 
 }
 
