@@ -1,10 +1,9 @@
 #include "delaunay/quadEdgeRef.hpp"
 #include <cassert>
 #include <optional>
+#include <unordered_set>
 
 namespace QE {
-
-  static std::vector<QuadEdgeRef*> allEdges;
 
   QuadEdgeRef* QuadEdgeRef::dual() {
     assert(nextRot != nullptr);
@@ -43,11 +42,6 @@ namespace QE {
     QuadEdgeRef *converse = new QuadEdgeRef();
     QuadEdgeRef *dualConverse = new QuadEdgeRef();
 
-    allEdges.push_back(self);
-    allEdges.push_back(dual);
-    allEdges.push_back(converse);
-    allEdges.push_back(dualConverse);
-
     // Save the payload coordinate data
     self->tailCoords = tail;
     converse->tailCoords = head;
@@ -69,9 +63,19 @@ namespace QE {
     return self;
   }
 
-  void freeAll() {
-    for (QuadEdgeRef *e : allEdges)
-      delete e;
+  void freeGraph_recurse(QuadEdgeRef *edge,
+      std::unordered_set<QuadEdgeRef*> &marked) {
+    if (marked.find(edge) != marked.end())
+      return;
+    marked.insert(edge);
+    freeGraph_recurse(edge->nextRot, marked);
+    freeGraph_recurse(edge->nextCCW, marked);
+    delete edge;
+  }
+
+  void freeGraph(QuadEdgeRef *edge) {
+    std::unordered_set<QuadEdgeRef*> marked;
+    freeGraph_recurse(edge, marked);
   }
 
 }

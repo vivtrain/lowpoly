@@ -25,7 +25,7 @@ int main () {
   assert(tor->nextCCW == rot);
   std::cout << "Verified circularity of dual edges CCW" << std::endl;
 
-  QE::freeAll();
+  QE::freeGraph(quadEdge);
 
   std::cout << "ALL TESTS PASSED!" << std::endl;
 }

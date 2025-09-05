@@ -3,7 +3,6 @@
 
 #include <opencv2/core/types.hpp>
 #include <optional>
-#include <vector>
 
 namespace QE {
   
@@ -23,7 +22,7 @@ namespace QE {
 
   QuadEdgeRef *makeQuadEdge(cv::Point tail, cv::Point head);
 
-  void freeAll();
+  void freeGraph(QuadEdgeRef *edge);
 
 }
 
