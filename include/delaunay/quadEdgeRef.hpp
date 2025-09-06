@@ -7,12 +7,12 @@
 namespace QE {
   
   struct QuadEdgeRef {
-    inline QuadEdgeRef(QuadEdgeRef* nextCCW=nullptr, QuadEdgeRef* nextRot=nullptr)
+    inline QuadEdgeRef(QuadEdgeRef *nextCCW=nullptr, QuadEdgeRef *nextRot=nullptr)
       : nextCCW(nextCCW), nextRot(nextRot), tailCoords(std::nullopt) {}
-    QuadEdgeRef* dual();
-    QuadEdgeRef* converse();
-    QuadEdgeRef* nextCW();
-    QuadEdgeRef* traverseCCW();
+    QuadEdgeRef* &dual();
+    QuadEdgeRef* &converse();
+    QuadEdgeRef* &prevCCW();
+    QuadEdgeRef* &traverseCCW();
     std::optional<cv::Point> headCoords();
 
     QuadEdgeRef *nextCCW;
@@ -21,7 +21,12 @@ namespace QE {
   };
 
   QuadEdgeRef *makeQuadEdge(cv::Point tail, cv::Point head);
-
+  void splice(QuadEdgeRef *a, QuadEdgeRef *b);
+  QuadEdgeRef *makeTriangle(cv::Point a, cv::Point b, cv::Point c);
+  QuadEdgeRef *connect(QuadEdgeRef *a, QuadEdgeRef *b);
+  void sever(QuadEdgeRef *edge);
+  QuadEdgeRef *insertPoint(QuadEdgeRef *polygonEdge, cv::Point point);
+  void flip(QuadEdgeRef *edge);
   void freeGraph(QuadEdgeRef *edge);
 
 }
