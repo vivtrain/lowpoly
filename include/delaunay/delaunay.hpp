@@ -5,8 +5,9 @@
 
 class Delaunay {
   public:
-  private:
     bool inCircle(cv::Point a, cv::Point b, cv::Point c, cv::Point test);
+    bool isCCW(cv::Point a, cv::Point b, cv::Point c);
+  private:
 };
 
 #endif // !DELAUNAY_HPP

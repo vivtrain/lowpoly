@@ -3,10 +3,22 @@
 #include <opencv2/core/types.hpp>
 #include <sys/types.h>
 #include <vector>
+#include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
 
 using namespace std;
 using namespace QE;
+
+void printEndpoints(QuadEdgeRef *edge, const char *label) {
+  assert(edge->origCoords.has_value());
+  assert(edge->termCoords().has_value());
+  printf("%s: tailCoords (%d, %d), headCoords (%d, %d)\n",
+      label,
+      edge->origCoords->x,
+      edge->origCoords->y,
+      edge->termCoords()->x,
+      edge->termCoords()->y);
+}
 
 void testSingleQuadEdge() {
   cout << "Testing a single QuadEdgeRef..." << endl;
@@ -21,27 +33,27 @@ void testSingleQuadEdge() {
   QuadEdgeRef *tor = sym->rot;
   assert(tor != nullptr);
   assert(tor->rot == self);
-  cout << "✔️ Verified circularity of rotations" << endl;
+  cout << "✅  Verified circularity of rotations" << endl;
 
   assert(self->rot == rot);
   assert(self->sym() == sym);
   assert(self->rot->sym() == tor);
   assert(self->sym()->rot == tor);
-  cout << "✔️ Verified basic structure" << endl;
+  cout << "✅  Verified basic structure" << endl;
 
   assert(self->origCoords == cv::Point(0,0));
   assert(self->termCoords() == cv::Point(1,2));
   assert(!rot->origCoords.has_value());
   assert(!rot->termCoords().has_value());
-  cout << "✔️ Verified coordinates" << endl;
+  cout << "✅  Verified coordinates" << endl;
 
   assert(self->onext == self);
   assert(sym->onext == sym);
-  cout << "✔️ Verified circularity of real edges CCW" << endl;
+  cout << "✅  Verified circularity of real edges CCW" << endl;
 
   assert(rot->onext == tor);
   assert(tor->onext == rot);
-  cout << "✔️ Verified circularity of dual edges CCW" << endl;
+  cout << "✅  Verified circularity of dual edges CCW" << endl;
   freeGraph(quadEdge);
 }
 
@@ -49,7 +61,7 @@ void testTriangle() {
   cout << "Testing a triangle..." << endl;
   QuadEdgeRef *e1 = makeTriangle({0,0}, {0,2}, {1,1});
   assert(e1->lnext()->lnext()->lnext() == e1);
-  cout << "✔️ Verified triangular connnectivity" << endl;
+  cout << "✅  Verified triangular connnectivity" << endl;
 
   QuadEdgeRef *e2 = e1->lnext(), *e3 = e2->lnext();
   assert(e1->rot == e2->rot->onext);
@@ -59,7 +71,7 @@ void testTriangle() {
   assert(e2->rot->sym() == e3->rot->sym()->oprev());
   assert(e3->rot->sym() == e1->rot->sym()->oprev());
   assert(e1->rot != e1->rot->sym());
-  cout << "✔️ Verified faces" << endl;
+  cout << "✅  Verified faces" << endl;
 
   freeGraph(e1);
 }
@@ -71,7 +83,7 @@ void testPolygon() {
   for (uint i = 0; i < points.size(); i++)
     e = e->lnext();
   assert(e == e1);
-  cout << "✔️ Verified polygon connnectivity" << endl;
+  cout << "✅  Verified polygon connnectivity" << endl;
 
   QuadEdgeRef *e2 = e1->lnext();
   for (uint i = 0; i < points.size(); i++) {
@@ -80,24 +92,13 @@ void testPolygon() {
     e1 = e2;
     e2 = e2->lnext();
   }
-  cout << "✔️ Verified faces" << endl;
+  cout << "✅  Verified faces" << endl;
 
   freeGraph(e1);
 }
 
-void printEndpoints(QuadEdgeRef *edge, const char *label) {
-  assert(edge->origCoords.has_value());
-  assert(edge->termCoords().has_value());
-  printf("%s: tailCoords (%d, %d), headCoords (%d, %d)\n",
-      label,
-      edge->origCoords->x,
-      edge->origCoords->y,
-      edge->termCoords()->x,
-      edge->termCoords()->y);
-}
-
 void testConnect() {
-  cout << "Test connecting a new edge" << endl;
+  cout << "Test connecting a new edge..." << endl;
   QuadEdgeRef *quadrangle = makePolygon({ {0,0}, {0,2}, {1,3}, {2,2}, {2,0} });
   QuadEdgeRef *ab = quadrangle,
               *bc = ab->lnext(),
@@ -111,8 +112,18 @@ void testConnect() {
   assert(ad->sym()->oprev() == cd->sym());
   assert(ad->rot == de->rot->onext);
   assert(ad->rot->sym() == ab->rot->onext);
-  cout << "✔️ Verified connection" << endl;
+  cout << "✅  Verified connection" << endl;
   freeGraph(quadrangle);
+}
+
+void testInCircle() {
+  cout << "Testing InCircle..." << endl;
+  Delaunay d;
+  assert(d.inCircle({2,2}, {6,0}, {8,6}, {4,2}));
+  assert(d.inCircle({2,2}, {8,6}, {6,0}, {4,2}));
+  assert(!d.inCircle({2,2}, {6,0}, {8,6}, {5,8}));
+  assert(!d.inCircle({2,2}, {8,6}, {6,0}, {5,8}));
+  cout << "✅  Verified circle test" << endl;
 }
 
 int main () {
@@ -120,5 +131,7 @@ int main () {
   testTriangle();
   testPolygon();
   testConnect();
+  testInCircle();
   cout << "ALL TESTS PASSED!" << endl;
 }
+
