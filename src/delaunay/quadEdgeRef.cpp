@@ -132,14 +132,14 @@ namespace QE {
   }
 
   void flip(QuadEdgeRef *edge) {
-    QuadEdgeRef *prevCCW = edge->oprev();
-    QuadEdgeRef *conversePrevCCW = edge->sym()->oprev();
-    splice(edge, prevCCW);
-    splice(edge->sym(), conversePrevCCW);
-    splice(edge, prevCCW->lnext());
-    splice(edge->sym(), conversePrevCCW->lnext());
-    edge->origCoords = prevCCW->termCoords();
-    edge->termCoords() = conversePrevCCW->termCoords();
+    QuadEdgeRef *prev = edge->oprev();
+    QuadEdgeRef *symPrev = edge->sym()->oprev();
+    splice(edge, prev);
+    splice(edge->sym(), symPrev);
+    splice(edge, prev->lnext());
+    splice(edge->sym(), symPrev->lnext());
+    edge->origCoords = prev->termCoords();
+    edge->termCoords() = symPrev->termCoords();
   }
 
   void freeGraph_recurse(QuadEdgeRef *edge,
