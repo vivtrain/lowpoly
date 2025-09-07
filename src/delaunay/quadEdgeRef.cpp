@@ -1,124 +1,145 @@
 #include "delaunay/quadEdgeRef.hpp"
 #include <cassert>
 #include <optional>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace QE {
 
-  QuadEdgeRef* &QuadEdgeRef::dual() {
-    assert(nextRot != nullptr);
-    return nextRot;
+  QuadEdgeRef* &QuadEdgeRef::sym() {
+    assert(rot != nullptr);
+    assert(rot->rot != nullptr);
+    return rot->rot;
   }
 
-  QuadEdgeRef* &QuadEdgeRef::converse() {
-    assert(nextRot != nullptr);
-    assert(nextRot->nextRot != nullptr);
-    return nextRot->nextRot;
+  QuadEdgeRef* &QuadEdgeRef::oprev() {
+    assert(rot != nullptr);
+    assert(rot->onext != nullptr);
+    assert(rot->onext->rot != nullptr);
+    return rot->onext->rot;
   }
 
-  QuadEdgeRef* &QuadEdgeRef::prevCCW() {
-    assert(nextRot != nullptr);
-    assert(nextRot->nextCCW != nullptr);
-    assert(nextRot->nextCCW->nextRot != nullptr);
-    return nextRot->nextCCW->nextRot;
+  QuadEdgeRef* &QuadEdgeRef::lnext() {
+    QuadEdgeRef *dc = rot->sym();
+    assert(dc->onext != nullptr);
+    assert(dc->onext->rot != nullptr);
+    return dc->onext->rot;
   }
 
-  QuadEdgeRef* &QuadEdgeRef::traverseCCW() {
-    QuadEdgeRef *dc = dual()->converse();
-    assert(dc != nullptr);
-    assert(dc->nextCCW != nullptr);
-    assert(dc->nextCCW->nextRot != nullptr);
-    return dc->nextCCW->nextRot;
-  }
-
-  std::optional<cv::Point> QuadEdgeRef::headCoords() {
-    return converse()->tailCoords;
+  std::optional<cv::Point> &QuadEdgeRef::termCoords() {
+    return sym()->origCoords;
   }
 
   QuadEdgeRef* makeQuadEdge(cv::Point tail, cv::Point head) {
     // Create four refs
     QuadEdgeRef *self = new QuadEdgeRef();
-    QuadEdgeRef *dual = new QuadEdgeRef();
-    QuadEdgeRef *converse = new QuadEdgeRef();
-    QuadEdgeRef *dualConverse = new QuadEdgeRef();
+    QuadEdgeRef *selfRot = new QuadEdgeRef();
+    QuadEdgeRef *selfRot2 = new QuadEdgeRef();
+    QuadEdgeRef *selfRot3 = new QuadEdgeRef();
 
     // Save the payload coordinate data
-    self->tailCoords = tail;
-    converse->tailCoords = head;
+    self->origCoords = tail;
+    selfRot2->origCoords = head;
 
     // Arrange the four edges into a cycle
-    self->nextRot = dual;
-    dual->nextRot = converse;
-    converse->nextRot = dualConverse;
-    dualConverse->nextRot = self;
+    self->rot = selfRot;
+    selfRot->rot = selfRot2;
+    selfRot2->rot = selfRot3;
+    selfRot3->rot = self;
 
     // Edges between vertices are their own neighbors about the tail
-    self->nextCCW = self;
-    converse->nextCCW = converse;
+    self->onext = self;
+    selfRot2->onext = selfRot2;
 
     // Dual edges (between faces) form a cycle (only one face exists so far)
-    dual->nextCCW = dualConverse;
-    dualConverse->nextCCW = dual;
+    selfRot->onext = selfRot3;
+    selfRot3->onext = selfRot;
 
     return self;
   }
 
+  void swapNextCCW(QuadEdgeRef* &a, QuadEdgeRef* &b) {
+    std::swap(a->onext, b->onext);
+  }
   void splice(QuadEdgeRef *a, QuadEdgeRef *b) {
-    std::swap(a->nextCCW->nextRot, b->nextCCW->nextRot);
-    std::swap(a->nextCCW, b->nextCCW);
+    assert(
+      (    a->origCoords.has_value() && a->termCoords().has_value()
+        && b->origCoords.has_value() && b->termCoords().has_value()) ||
+      (    !a->origCoords.has_value() && !a->termCoords().has_value()
+        && !b->origCoords.has_value() && !b->termCoords().has_value())
+    );
+    swapNextCCW(a->onext->rot, b->onext->rot);
+    swapNextCCW(a, b);
   }
 
   QuadEdgeRef *makeTriangle(cv::Point a, cv::Point b, cv::Point c) {
     QuadEdgeRef *ab = makeQuadEdge(a, b);
     QuadEdgeRef *bc = makeQuadEdge(b, c);
     QuadEdgeRef *ca = makeQuadEdge(c, a);
-    splice(ab->converse(), bc);
-    splice(bc->converse(), ca);
-    splice(ca->converse(), ab);
+    splice(ab->sym(), bc);
+    splice(bc->sym(), ca);
+    splice(ca->sym(), ab);
     return ab;
   }
 
+  QuadEdgeRef *makePolygon(std::vector<cv::Point> points) {
+    if (points.size() < 3)
+      throw std::logic_error("Polygons must have at least three vertices.");
+    QuadEdgeRef *firstEdge = makeQuadEdge(points[0], points[1]);
+    QuadEdgeRef *edge = firstEdge, *lastEdge = nullptr;
+    for (uint i = 2; i < points.size(); i++) {
+      lastEdge = makeQuadEdge(points[i-1], points[i]);
+      splice(edge->sym(), lastEdge);
+      edge = lastEdge;
+    }
+    lastEdge = makeQuadEdge(points.back(), points.front());
+    splice(edge->sym(), lastEdge);
+    splice(lastEdge->sym(), firstEdge);
+    return firstEdge;
+  }
+
   QuadEdgeRef *connect(QuadEdgeRef *a, QuadEdgeRef *b) {
-    assert(a->tailCoords.has_value());
-    assert(b->headCoords().has_value());
-    assert(b->tailCoords.has_value());
-    assert(b->headCoords().has_value());
+    assert(a->origCoords.has_value());
+    assert(b->termCoords().has_value());
+    assert(b->origCoords.has_value());
+    assert(b->termCoords().has_value());
     QuadEdgeRef *newEdge
-      = makeQuadEdge(a->headCoords().value(), b->tailCoords.value());
-    splice(newEdge, a->traverseCCW());
-    splice(newEdge->converse(), b);
+      = makeQuadEdge(a->termCoords().value(), b->origCoords.value());
+    splice(newEdge, a->lnext());
+    splice(newEdge->sym(), b);
     return newEdge;
   }
 
   void sever(QuadEdgeRef *edge) {
-    splice(edge, edge->prevCCW());
-    splice(edge->converse(), edge->converse()->prevCCW());
+    splice(edge, edge->oprev());
+    splice(edge->sym(), edge->sym()->oprev());
+    delete edge;
   }
   
   QuadEdgeRef *insertPoint(QuadEdgeRef *polygonEdge, cv::Point point) {
-    assert(polygonEdge->tailCoords.has_value());
+    assert(polygonEdge->origCoords.has_value());
     QuadEdgeRef *firstSpoke
-      = makeQuadEdge(polygonEdge->tailCoords.value(), point);
+      = makeQuadEdge(polygonEdge->origCoords.value(), point);
     splice(firstSpoke, polygonEdge);
     QuadEdgeRef *spoke = firstSpoke;
     do {
-      spoke = connect(polygonEdge, spoke->converse());
-      spoke->dual()->tailCoords.reset();
-      spoke->dual()->converse()->tailCoords.reset();
-      polygonEdge = spoke->prevCCW();
-    } while (polygonEdge->nextCCW != firstSpoke);
+      spoke = connect(polygonEdge, spoke->sym());
+      spoke->rot->origCoords.reset();
+      spoke->rot->sym()->origCoords.reset();
+      polygonEdge = spoke->oprev();
+    } while (polygonEdge->onext != firstSpoke);
     return firstSpoke;
   }
 
   void flip(QuadEdgeRef *edge) {
-    QuadEdgeRef *prevCCW = edge->prevCCW();
-    QuadEdgeRef *conversePrevCCW = edge->converse()->prevCCW();
+    QuadEdgeRef *prevCCW = edge->oprev();
+    QuadEdgeRef *conversePrevCCW = edge->sym()->oprev();
     splice(edge, prevCCW);
-    splice(edge->converse(), conversePrevCCW);
-    splice(edge, prevCCW->traverseCCW());
-    splice(edge->converse(), conversePrevCCW->traverseCCW());
-    edge->tailCoords = prevCCW->headCoords();
-    edge->headCoords() = conversePrevCCW->headCoords();
+    splice(edge->sym(), conversePrevCCW);
+    splice(edge, prevCCW->lnext());
+    splice(edge->sym(), conversePrevCCW->lnext());
+    edge->origCoords = prevCCW->termCoords();
+    edge->termCoords() = conversePrevCCW->termCoords();
   }
 
   void freeGraph_recurse(QuadEdgeRef *edge,
@@ -126,8 +147,8 @@ namespace QE {
     if (marked.find(edge) != marked.end())
       return;
     marked.insert(edge);
-    freeGraph_recurse(edge->nextRot, marked);
-    freeGraph_recurse(edge->nextCCW, marked);
+    freeGraph_recurse(edge->rot, marked);
+    freeGraph_recurse(edge->onext, marked);
     delete edge;
   }
 
