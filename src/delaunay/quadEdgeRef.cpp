@@ -58,18 +58,18 @@ namespace QE {
     return self;
   }
 
-  void swapNextCCW(QuadEdgeRef* &a, QuadEdgeRef* &b) {
+  void swapONexts(QuadEdgeRef* &a, QuadEdgeRef* &b) {
     std::swap(a->onext, b->onext);
   }
   void splice(QuadEdgeRef *a, QuadEdgeRef *b) {
     assert(
-      (    a->origCoords.has_value() && a->termCoords().has_value()
-        && b->origCoords.has_value() && b->termCoords().has_value()) ||
-      (    !a->origCoords.has_value() && !a->termCoords().has_value()
-        && !b->origCoords.has_value() && !b->termCoords().has_value())
+      (a->origCoords.has_value() && a->termCoords().has_value() && 
+       b->origCoords.has_value() && b->termCoords().has_value()) ||
+      (!a->origCoords.has_value() && !a->termCoords().has_value() && 
+       !b->origCoords.has_value() && !b->termCoords().has_value())
     );
-    swapNextCCW(a->onext->rot, b->onext->rot);
-    swapNextCCW(a, b);
+    swapONexts(a->onext->rot, b->onext->rot);
+    swapONexts(a, b);
   }
 
   QuadEdgeRef *makeTriangle(cv::Point a, cv::Point b, cv::Point c) {
