@@ -26,6 +26,10 @@ namespace QE {
     return dc->onext->rot;
   }
 
+  QuadEdgeRef* &QuadEdgeRef::rprev() {
+    return sym()->lnext();
+  }
+
   std::optional<cv::Point> &QuadEdgeRef::termCoords() {
     return sym()->origCoords;
   }

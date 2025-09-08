@@ -1,14 +1,10 @@
 #include "delaunay/delaunay.hpp"
+#include "delaunay/quadEdgeRef.hpp"
+#include <algorithm>
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <stdexcept>
-
-
-Delaunay::Delaunay(std::vector<cv::Point> sites) : sites(sites) {
-  if (sites.size() < 3)
-    throw std::logic_error("You must triangulate at least three points");
-}
 
 bool Delaunay::isCCW(cv::Point a, cv::Point b, cv::Point c) {
   float xa = a.x, ya = a.y;
@@ -58,3 +54,96 @@ bool Delaunay::inCircle(cv::Point a, cv::Point b, cv::Point c, cv::Point test) {
   double inCircleDet = cv::determinant(inCircleMat);
   return isCCW(a, b, c) ? inCircleDet > 0 : inCircleDet < 0;
 }
+
+std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate_recurse(
+    const std::vector<cv::Point> &points, uint first, uint last) {
+  // Base case: 2 points => single quad-edge
+  const uint N = last - first, i = first, j = last;
+  if (N < 2) {
+    throw std::logic_error("Should never get here! Fewer than 2 points to "
+        "triangulate.");
+  } else if (N == 2) {
+    QE::QuadEdgeRef *edge = QE::makeQuadEdge(points[i], points[j]);
+    return { edge, edge->sym() };
+  // Base case: 3 points => single triangle
+  } else if (N == 3) {
+    QE::QuadEdgeRef *ab = QE::makeQuadEdge(points[i], points[i+1]);
+    QE::QuadEdgeRef *bc = QE::makeQuadEdge(points[i+1], points[i+2]);
+    QE::splice(ab->sym(), bc);
+    if (isCCW(points[i], points[i+1], points[i+2])) {
+      QE::connect(bc, ab);
+      return { ab, bc->sym() };
+    } else if (isCCW(points[i], points[i+2], points[i+1])){
+      QE::QuadEdgeRef *ca = QE::connect(bc, ab);
+      return { ca->sym(), ca };
+    } else {
+      // Colinear (do not connect into a triangle)
+      return { ab, bc->sym() };
+    }
+  // General case: 4+ points => recurse + merge
+  } else {
+    // Recurse on L and R -> left + right bounds
+    uint middle = (first + last) / 2;
+    auto [ldo, ldi] = triangulate_recurse(points, first, middle);
+    auto [rdi, rdo] = triangulate_recurse(points, middle+1, last);
+    // Create the base cross edge (lower common tangent)
+    if (isLeftOf(rdi->origCoords.value(), ldi))
+      ldi = ldi->lnext();
+    else if (isRightOf(ldi->origCoords.value(), rdi))
+      rdi = rdi->rprev();
+    QE::QuadEdgeRef *baseL = QE::connect(rdi->sym(), ldi);
+    if (ldi->origCoords.value() == ldo->origCoords.value())
+      ldo = baseL->sym();
+    if (rdi->origCoords.value() == rdo->origCoords.value())
+      rdo = baseL;
+    // Merge L and R
+    while (true) {
+      // Determine the best L candidate
+      QE::QuadEdgeRef *lcand = baseL->sym()->onext;
+      if (isAbove(lcand, baseL)) {
+        // Walk CCW around convex hull of L until we find a point not inCircle
+        while (inCircle(baseL->termCoords().value(), baseL->origCoords.value(),
+              lcand->termCoords().value(), lcand->onext->termCoords().value())) {
+          QE::QuadEdgeRef *next = lcand->onext;
+          QE::sever(lcand);
+          lcand = next;
+        }
+      }
+      // Determine the best R candidate
+      QE::QuadEdgeRef *rcand = baseL->oprev();
+      if (isAbove(rcand, baseL)) {
+        // Walk CW around convex hull of R until we find a point not inCircle
+        while (inCircle(baseL->termCoords().value(), baseL->origCoords.value(),
+              rcand->termCoords().value(), rcand->oprev()->termCoords().value())) {
+          QE::QuadEdgeRef *next = rcand->oprev();
+          QE::sever(rcand);
+          rcand = next;
+        }
+      }
+      // If neither candidate was valid, done (baseL is upper common tangent)
+      bool lCandValid = isAbove(lcand, baseL), rCandValid = isAbove(rcand, baseL);
+      if (!lCandValid && !rCandValid)
+        break;
+      // Choose the next cross edge to connect
+      bool test = inCircle(lcand->termCoords().value(),
+                           lcand->origCoords.value(),
+                           rcand->origCoords.value(),
+                           rcand->termCoords().value());
+      if (!lCandValid || (rCandValid && test))
+        baseL = QE::connect(rcand, baseL->sym());
+      else
+        baseL = QE::connect(baseL, lcand->sym());
+    }
+    return { ldo, rdo };
+  }
+}
+
+std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate(
+    std::vector<cv::Point> points) {
+  std::sort(points.begin(), points.end(),
+      [](const cv::Point &a, const cv::Point &b) {
+        return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
+      });
+  return triangulate_recurse(points, 0, points.size()-1);
+}
+

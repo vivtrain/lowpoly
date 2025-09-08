@@ -13,6 +13,7 @@ namespace QE {
     QuadEdgeRef* &sym();
     QuadEdgeRef* &oprev();
     QuadEdgeRef* &lnext();
+    QuadEdgeRef* &rprev();
     std::optional<cv::Point> &termCoords();
 
     QuadEdgeRef *onext;
