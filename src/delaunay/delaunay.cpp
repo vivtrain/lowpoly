@@ -1,10 +1,20 @@
 #include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
 #include <algorithm>
+#include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
+#include <set>
 #include <stdexcept>
+#include <vector>
+
+struct comparePoints {
+  bool operator()(const cv::Point &a, const cv::Point &b) const {
+    return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
+  }
+};
 
 bool Delaunay::isCCW(cv::Point a, cv::Point b, cv::Point c) {
   float xa = a.x, ya = a.y;
@@ -58,7 +68,7 @@ bool Delaunay::inCircle(cv::Point a, cv::Point b, cv::Point c, cv::Point test) {
 std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate_recurse(
     const std::vector<cv::Point> &points, uint first, uint last) {
   // Base case: 2 points => single quad-edge
-  const uint N = last - first, i = first, j = last;
+  const uint N = last - first + 1, i = first, j = last;
   if (N < 2) {
     throw std::logic_error("Should never get here! Fewer than 2 points to "
         "triangulate.");
@@ -145,5 +155,13 @@ std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate(
         return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
       });
   return triangulate_recurse(points, 0, points.size()-1);
+}
+
+void extractSimplices_recurse() {
+}
+
+std::vector<std::vector<cv::Point>> Delaunay::extractSimplices(
+    QE::QuadEdgeRef *triangulation) {
+  return {};
 }
 

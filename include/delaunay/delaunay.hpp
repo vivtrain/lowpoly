@@ -15,6 +15,8 @@ class Delaunay {
     bool isAbove(QE::QuadEdgeRef *test, QE::QuadEdgeRef *baseL);
     std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*>
       triangulate(std::vector<cv::Point> points);
+    std::vector<std::vector<cv::Point>>
+      extractSimplices(QE::QuadEdgeRef *triangulation);
   private:
     std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*>
       triangulate_recurse(const std::vector<cv::Point> &points, uint first, uint last);

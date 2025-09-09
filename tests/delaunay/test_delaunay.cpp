@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdio>
 #include <iostream>
 #include <opencv2/core/types.hpp>
 #include <sys/types.h>
@@ -127,11 +128,25 @@ void testInCircle() {
 }
 
 int main () {
-  testSingleQuadEdge();
-  testTriangle();
-  testPolygon();
-  testConnect();
-  testInCircle();
-  cout << "ALL TESTS PASSED!" << endl;
+  // testSingleQuadEdge();
+  // testTriangle();
+  // testPolygon();
+  // testConnect();
+  // testInCircle();
+  // cout << "ALL TESTS PASSED!" << endl;
+  Delaunay d;
+  int IMG_HEIGHT = 6, IMG_WIDTH = 8;
+  std::vector<std::vector<cv::Point>> triangles
+    = d.extractSimplices(
+        d.triangulate({
+          {0,0}, {0,IMG_HEIGHT}, {IMG_WIDTH,0},// {IMG_WIDTH,IMG_HEIGHT},
+          // {IMG_WIDTH/2, IMG_HEIGHT/2},
+        }).first);
+  for (const auto &triangle : triangles) {
+    for (const auto &point : triangle) {
+      printf("(%d,%d), ", point.x, point.y);
+    }
+    std::cout << std::endl;
+  }
 }
 
