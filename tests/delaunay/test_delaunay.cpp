@@ -119,11 +119,10 @@ void testConnect() {
 
 void testInCircle() {
   cout << "Testing InCircle..." << endl;
-  Delaunay d;
-  assert(d.inCircle({2,2}, {6,0}, {8,6}, {4,2}));
-  assert(d.inCircle({2,2}, {8,6}, {6,0}, {4,2}));
-  assert(!d.inCircle({2,2}, {6,0}, {8,6}, {5,8}));
-  assert(!d.inCircle({2,2}, {8,6}, {6,0}, {5,8}));
+  assert(Delaunay::inCircle({2,2}, {6,0}, {8,6}, {4,2}));
+  assert(Delaunay::inCircle({2,2}, {8,6}, {6,0}, {4,2}));
+  assert(!Delaunay::inCircle({2,2}, {6,0}, {8,6}, {5,8}));
+  assert(!Delaunay::inCircle({2,2}, {8,6}, {6,0}, {5,8}));
   cout << "✅  Verified circle test" << endl;
 }
 
@@ -134,14 +133,13 @@ int main () {
   // testConnect();
   // testInCircle();
   // cout << "ALL TESTS PASSED!" << endl;
-  Delaunay d;
   int IMG_HEIGHT = 2, IMG_WIDTH = 2;
   std::vector<cv::Point> points{
     {0,0}, {0,IMG_HEIGHT}, {IMG_WIDTH,0}, {IMG_WIDTH,IMG_HEIGHT},
     {IMG_WIDTH/2, IMG_HEIGHT/2},
   };
-  QuadEdgeRef *graph = d.triangulate(points).first;
-  std::vector<std::vector<cv::Point>> simps = d.extractTriangles(graph);
+  QuadEdgeRef *graph = Delaunay::triangulate(points);
+  std::vector<std::vector<cv::Point>> simps = Delaunay::extractTriangles(graph);
 
   printf("%zu Triangles:\n", simps.size());
   for (const auto &s : simps) {

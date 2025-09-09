@@ -9,6 +9,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include "delaunay/delaunay.hpp"
+#include "delaunay/quadEdgeRef.hpp"
 #include "util.hpp"
 
 int main() {
@@ -17,28 +19,43 @@ int main() {
   std::string basename = imgPath.substr(imgPath.find_last_of('/') + 1);
   cv::Mat img = cv::imread(imgPath);
   cv::resize(img, img, cv::Size(img.cols/2, img.rows/2));
+  printf("%s image size: %d x %d\n", basename.c_str(), img.cols, img.rows);
   cv::imshow(basename, img);
 
   // Apply Sobel
-  cv::Mat dst;
-  util::sobelMagnitude(img, dst);
-  cv::imshow(basename + " - Sobel magnitude", dst);
+  cv::Mat vertImg;
+  util::sobelMagnitude(img, vertImg);
+  cv::imshow(basename + " - Sobel magnitude", vertImg);
   // Apply non-max suppression
-  util::nonMaxSuppress(dst, dst, 11, 0.4);
+  util::nonMaxSuppress(vertImg, vertImg, 11, 0.4);
   // Salt the image with extra vertices at random
-  util::salt(dst, 0.001);
-  cv::imshow(basename + " - Extracted vertices", dst);
+  util::salt(vertImg, 0.001);
+  cv::imshow(basename + " - Extracted vertices", vertImg);
 
   // Extract vertices from image
-  std::vector<cv::Point> vertices {
-    // Include corners
-    {0, 0},
-    {0, dst.rows - 1},
-    {dst.cols - 1, 0},
-    {dst.cols - 1, dst.rows - 1},
-  };
-  cv::findNonZero(dst, vertices);
-  std::cout << vertices.size() << " vertices" << std::endl;
+  std::vector<cv::Point> vertices;
+  cv::findNonZero(vertImg, vertices);
+  // Include corners
+  vertices.push_back({0, 0});
+  vertices.push_back({0, vertImg.rows - 1});
+  vertices.push_back({vertImg.cols - 1, 0});
+  vertices.push_back({vertImg.cols - 1, vertImg.rows - 1});
+  std::cout << vertices.size() << " Vertices" << std::endl;
+
+  QE::QuadEdgeRef *triangulation = Delaunay::triangulate(vertices);
+  std::vector<std::vector<cv::Point>> triangles 
+    = Delaunay::extractTriangles(triangulation);
+  printf("%zu Triangles: \n", triangles.size());
+  for (auto &triangle : triangles) {
+    for (auto &point : triangle)
+      printf("(%d, %d) ", point.x, point.y);
+    printf("\n");
+  }
+
+  cv::Mat triangulated(vertImg.size(), vertImg.type());
+  printf("triangulated image size: %d x %d\n", img.cols, img.rows);
+  cv::drawContours(triangulated, triangles, -1, cv::Scalar(1, 1, 1));
+  cv::imshow(basename + " - Triangulated", triangulated);
 
   while (cv::waitKey(30) != 'q')
     continue;
