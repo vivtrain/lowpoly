@@ -16,10 +16,7 @@ class Delaunay {
     std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*>
       triangulate(std::vector<cv::Point> points);
     std::vector<std::vector<cv::Point>>
-      extractSimplices(QE::QuadEdgeRef *triangulation);
-  private:
-    std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*>
-      triangulate_recurse(const std::vector<cv::Point> &points, uint first, uint last);
+      extractTriangles(QE::QuadEdgeRef *edge);
 };
 
 #endif // !DELAUNAY_HPP

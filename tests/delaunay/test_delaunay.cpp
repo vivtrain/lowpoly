@@ -135,18 +135,20 @@ int main () {
   // testInCircle();
   // cout << "ALL TESTS PASSED!" << endl;
   Delaunay d;
-  int IMG_HEIGHT = 6, IMG_WIDTH = 8;
-  std::vector<std::vector<cv::Point>> triangles
-    = d.extractSimplices(
-        d.triangulate({
-          {0,0}, {0,IMG_HEIGHT}, {IMG_WIDTH,0},// {IMG_WIDTH,IMG_HEIGHT},
-          // {IMG_WIDTH/2, IMG_HEIGHT/2},
-        }).first);
-  for (const auto &triangle : triangles) {
-    for (const auto &point : triangle) {
-      printf("(%d,%d), ", point.x, point.y);
-    }
-    std::cout << std::endl;
+  int IMG_HEIGHT = 2, IMG_WIDTH = 2;
+  std::vector<cv::Point> points{
+    {0,0}, {0,IMG_HEIGHT}, {IMG_WIDTH,0}, {IMG_WIDTH,IMG_HEIGHT},
+    {IMG_WIDTH/2, IMG_HEIGHT/2},
+  };
+  QuadEdgeRef *graph = d.triangulate(points).first;
+  std::vector<std::vector<cv::Point>> simps = d.extractTriangles(graph);
+
+  printf("%zu Triangles:\n", simps.size());
+  for (const auto &s : simps) {
+    for (const auto &point : s)
+      printf("(%d,%d) ", point.x, point.y);
+    printf("\n");
   }
+  
 }
 

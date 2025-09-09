@@ -1,13 +1,15 @@
 #include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
 #include <algorithm>
-#include <iostream>
+#include <cstddef>
+#include <functional>
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <set>
 #include <stdexcept>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 struct comparePoints {
@@ -142,7 +144,7 @@ std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate_recurse(
       if (!lCandValid || (rCandValid && test))
         baseL = QE::connect(rcand, baseL->sym());
       else
-        baseL = QE::connect(baseL, lcand->sym());
+        baseL = QE::connect(baseL->sym(), lcand->sym());
     }
     return { ldo, rdo };
   }
@@ -154,14 +156,81 @@ std::pair<QE::QuadEdgeRef*, QE::QuadEdgeRef*> Delaunay::triangulate(
       [](const cv::Point &a, const cv::Point &b) {
         return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
       });
+  printf("Sort order: ");
+  for (const auto &point : points)
+    printf("(%d,%d) ", point.x, point.y);
+  printf("\n");
   return triangulate_recurse(points, 0, points.size()-1);
 }
 
-void extractSimplices_recurse() {
+struct EdgeHash {
+  size_t operator() (const std::pair<cv::Point, cv::Point> &edge) const {
+    std::string concat
+      = std::to_string(edge.first.x)
+      + std::to_string(edge.first.y)
+      + std::to_string(edge.second.x)
+      + std::to_string(edge.second.y);
+    std::hash<std::string> hasher;
+    return hasher(concat);
+  }
+};
+
+bool isEdgeMarked(QE::QuadEdgeRef *edge,
+    const std::unordered_set<std::pair<cv::Point, cv::Point>, EdgeHash> &seen) {
+  return seen.count({edge->origCoords.value(), edge->termCoords().value()}) > 0;
 }
 
-std::vector<std::vector<cv::Point>> Delaunay::extractSimplices(
-    QE::QuadEdgeRef *triangulation) {
-  return {};
+void markEdge(QE::QuadEdgeRef *edge,
+    std::unordered_set<std::pair<cv::Point, cv::Point>, EdgeHash> &seen) {
+  seen.insert({edge->origCoords.value(), edge->termCoords().value()});
+  seen.insert({edge->termCoords().value(), edge->origCoords.value()});
+}
+
+void extractTriangles_recurse(
+    QE::QuadEdgeRef *edge,
+    std::vector<std::vector<cv::Point>> &triangles,
+    std::unordered_set<std::pair<cv::Point, cv::Point>, EdgeHash> &seen,
+    std::unordered_set<std::pair<cv::Point, cv::Point>, EdgeHash> &triangulated) {
+  // Skip seen edges
+  if (isEdgeMarked(edge, seen))
+    return;
+  // Traverse CCW until back at start
+  const QE::QuadEdgeRef *firstEdge = edge;
+  std::vector<QE::QuadEdgeRef*> polyEdges;
+  do {
+    polyEdges.push_back(edge);
+    edge = edge->lnext();
+  } while (edge != firstEdge);
+  if (polyEdges.size() != 3) // Ignore the outside face (convex hull)
+    return;
+  // Extract triangle vertices, recurse along neighbors along the way
+  std::vector<cv::Point> triangle;
+  for (const auto &e : polyEdges) {
+    triangle.push_back(e->origCoords.value());
+    markEdge(e, seen);
+    extractTriangles_recurse(e->oprev(), triangles, seen, triangulated);
+  }
+  // Check if all edges along path are already triangulated
+  bool allTriangulated = true;
+  for (const auto &e : polyEdges) {
+    if (!isEdgeMarked(e, triangulated)) {
+      allTriangulated = false;
+      break;
+    }
+  }
+  // If any edge is not triangulated, add the triangle to the list
+  if (!allTriangulated) {
+    triangles.push_back(triangle);
+    for (const auto &e : polyEdges)
+      markEdge(e, triangulated);
+  }
+}
+
+std::vector<std::vector<cv::Point>> Delaunay::extractTriangles(
+    QE::QuadEdgeRef *edge) {
+  std::vector<std::vector<cv::Point>> simplices;
+  std::unordered_set<std::pair<cv::Point, cv::Point>, EdgeHash> seen, triangulated;
+  extractTriangles_recurse(edge, simplices, seen, triangulated);
+  return simplices;
 }
 

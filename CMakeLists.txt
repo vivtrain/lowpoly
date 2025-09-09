@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Apply compile flags to to all targets
-add_compile_options(-Wall -Wextra)
+add_compile_options(-Wall -Wextra -g)
 
 # Generate compile_commands.json for LSPs
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
