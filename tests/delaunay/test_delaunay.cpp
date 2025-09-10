@@ -1,25 +1,22 @@
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
+#include <functional>
 #include <iostream>
+#include <opencv2/core.hpp>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <string>
 #include <sys/types.h>
+#include <unordered_set>
 #include <vector>
 #include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
 
 using namespace std;
 using namespace QE;
-
-void printEndpoints(QuadEdgeRef *edge, const char *label) {
-  assert(edge->origCoords.has_value());
-  assert(edge->termCoords().has_value());
-  printf("%s: tailCoords (%d, %d), headCoords (%d, %d)\n",
-      label,
-      edge->origCoords->x,
-      edge->origCoords->y,
-      edge->termCoords()->x,
-      edge->termCoords()->y);
-}
 
 void testSingleQuadEdge() {
   cout << "Testing a single QuadEdgeRef..." << endl;
@@ -79,7 +76,7 @@ void testTriangle() {
 
 void testPolygon() {
   cout << "Testing a polygon..." << endl;
-  std::vector<cv::Point> points = { {0,0}, {0,2}, {1,1}, {2,0} };
+  vector<cv::Point> points = { {0,0}, {0,2}, {1,1}, {2,0} };
   QuadEdgeRef *e1 = makePolygon(points), *e = e1;
   for (uint i = 0; i < points.size(); i++)
     e = e->lnext();
@@ -126,6 +123,13 @@ void testInCircle() {
   cout << "✅  Verified circle test" << endl;
 }
 
+struct PointHash {
+  size_t operator()(const cv::Point &p) const {
+    return hasher(to_string(p.x) + to_string(p.y));
+  }
+  hash<string> hasher;
+};
+
 int main () {
   // testSingleQuadEdge();
   // testTriangle();
@@ -133,20 +137,50 @@ int main () {
   // testConnect();
   // testInCircle();
   // cout << "ALL TESTS PASSED!" << endl;
-  int IMG_HEIGHT = 2, IMG_WIDTH = 2;
-  std::vector<cv::Point> points{
-    {0,0}, {0,IMG_HEIGHT}, {IMG_WIDTH,0}, {IMG_WIDTH,IMG_HEIGHT},
-    {IMG_WIDTH/2, IMG_HEIGHT/2},
-  };
+  const int IMG_HEIGHT = 10, IMG_WIDTH = 10, N_POINTS = 5, SCALE = 50;
+  unordered_set<cv::Point, PointHash> pointSet;
+  pointSet.insert({1, 1});
+  pointSet.insert({IMG_WIDTH-1, 1});
+  pointSet.insert({1, IMG_HEIGHT-1});
+  pointSet.insert({IMG_WIDTH-1, IMG_HEIGHT-1});
+  cv::RNG rng(time(nullptr));
+  while(pointSet.size() < N_POINTS + 4) {
+    int x = rng.uniform(1, IMG_WIDTH-1);
+    int y = rng.uniform(1, IMG_HEIGHT-1);
+    pointSet.insert({x, y});
+  }
+  vector<cv::Point> points(pointSet.begin(), pointSet.end());
   QuadEdgeRef *graph = Delaunay::triangulate(points);
-  std::vector<std::vector<cv::Point>> simps = Delaunay::extractTriangles(graph);
+  vector<vector<cv::Point>> triangles
+    = Delaunay::extractTriangles(graph);
 
-  printf("%zu Triangles:\n", simps.size());
-  for (const auto &s : simps) {
+  printf("%zu Triangles:\n", triangles.size());
+  for (const auto &s : triangles) {
     for (const auto &point : s)
       printf("(%d,%d) ", point.x, point.y);
     printf("\n");
   }
-  
+
+  for (auto &s : triangles) {
+    for (auto &point : s) {
+      point.x *= SCALE;
+      point.y *= SCALE;
+    }
+  }
+  for (auto &point : points) {
+    point.x *= SCALE;
+    point.y *= SCALE;
+  }
+
+  cv::Mat img = cv::Mat::zeros(IMG_HEIGHT*SCALE, IMG_WIDTH*SCALE, CV_8UC3);
+  cv::drawContours(img, triangles, -1, cv::Scalar(255, 100, 100), 2);
+  for (const auto &point : points)
+    cv::circle(img, point, 3, cv::Scalar(100, 0, 255), 5);
+  cv::flip(img, img, 0);
+  cv::imshow("delaunay output", img);
+
+  while (cv::waitKey(30) != 'q')
+    continue;
+  cv::destroyAllWindows();
 }
 

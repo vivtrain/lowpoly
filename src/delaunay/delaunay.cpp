@@ -98,18 +98,31 @@ namespace Delaunay {
     } else {
       // Recurse on L and R -> left + right bounds
       uint middle = (first + last) / 2;
+      printf("window between: (%d,%d) and (%d,%d)\n",
+          points[i].x,
+          points[i].y,
+          points[j].x,
+          points[j].y);
       auto [ldo, ldi] = triangulate_recurse(points, first, middle);
       auto [rdi, rdo] = triangulate_recurse(points, middle+1, last);
       // Create the base cross edge (lower common tangent)
-      if (isLeftOf(rdi->origCoords.value(), ldi))
-        ldi = ldi->lnext();
-      else if (isRightOf(ldi->origCoords.value(), rdi))
-        rdi = rdi->rprev();
+      while(true) {
+        if (isLeftOf(rdi->origCoords.value(), ldi))
+          ldi = ldi->lnext();
+        else if (isRightOf(ldi->origCoords.value(), rdi))
+          rdi = rdi->rprev();
+        else
+          break;
+      }
       QE::QuadEdgeRef *baseL = QE::connect(rdi->sym(), ldi);
       if (ldi->origCoords.value() == ldo->origCoords.value())
         ldo = baseL->sym();
       if (rdi->origCoords.value() == rdo->origCoords.value())
         rdo = baseL;
+      QE::printEndpoints(ldo, "ldo");
+      QE::printEndpoints(ldi, "ldi");
+      QE::printEndpoints(rdi, "rdi");
+      QE::printEndpoints(rdo, "rdo");
       // Merge L and R
       while (true) {
         // Determine the best L candidate
@@ -134,10 +147,15 @@ namespace Delaunay {
             rcand = next;
           }
         }
+        QE::printEndpoints(baseL, "baseL");
+        QE::printEndpoints(lcand, "lcand");
+        QE::printEndpoints(rcand, "rcand");
         // If neither candidate was valid, done (baseL is upper common tangent)
-        bool lCandValid = isAbove(lcand, baseL), rCandValid = isAbove(rcand, baseL);
-        if (!lCandValid && !rCandValid)
+        bool lCandValid = isAbove(lcand, baseL);
+        bool rCandValid = isAbove(rcand, baseL);
+        if (!lCandValid && !rCandValid) {
           break;
+        }
         // Choose the next cross edge to connect
         bool test = inCircle(lcand->termCoords().value(),
                              lcand->origCoords.value(),
@@ -148,6 +166,7 @@ namespace Delaunay {
         else
           baseL = QE::connect(baseL->sym(), lcand->sym());
       }
+      printf("return\n");
       return { ldo, rdo };
     }
   }
@@ -157,6 +176,10 @@ namespace Delaunay {
         [](const cv::Point &a, const cv::Point &b) {
           return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
         });
+    printf("Sort order: ");
+    for (const auto &point : points)
+      printf("(%d, %d) ", point.x, point.y);
+    printf("\n");
     return triangulate_recurse(points, 0, points.size()-1).first;
   }
 

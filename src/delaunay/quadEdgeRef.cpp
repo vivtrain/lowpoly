@@ -6,6 +6,17 @@
 
 namespace QE {
 
+  void printEndpoints(QuadEdgeRef *edge, const char *label) {
+    assert(edge->origCoords.has_value());
+    assert(edge->termCoords().has_value());
+    printf("%s: tailCoords (%d, %d), headCoords (%d, %d)\n",
+        label,
+        edge->origCoords->x,
+        edge->origCoords->y,
+        edge->termCoords()->x,
+        edge->termCoords()->y);
+  }
+
   QuadEdgeRef* &QuadEdgeRef::sym() {
     assert(rot != nullptr);
     assert(rot->rot != nullptr);

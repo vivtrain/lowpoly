@@ -21,6 +21,7 @@ namespace QE {
     std::optional<cv::Point> origCoords;
   };
 
+  void printEndpoints(QuadEdgeRef *edge, const char *label);
   QuadEdgeRef *makeQuadEdge(cv::Point tail, cv::Point head);
   void splice(QuadEdgeRef *a, QuadEdgeRef *b);
   QuadEdgeRef *makeTriangle(cv::Point a, cv::Point b, cv::Point c);
