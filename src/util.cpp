@@ -50,6 +50,60 @@ namespace util {
     cv::magnitude(dstX, dstY, dst);
   }
 
+  inline int linearMap(int toMap, int inMin, int inMax, int outMin, int outMax) {
+    if (inMax == inMin) return outMin; // Prevent division by zero
+    return outMin + ((toMap - inMin) * (outMax - outMin)) / (inMax - inMin);
+  }
+
+  void adaptiveNonMaxSuppress(
+      cv::InputArray src,
+      cv::OutputArray dst,
+      const int minKernelRadius,
+      const int maxKernelRadius,
+      const int edgeAOERadius,
+      const double threshold) {
+
+    cv::Mat srcMat = src.getMat();
+    dst.create(src.size(), src.type());
+    cv::Mat dstMat = dst.getMatRef();
+    // Make a temp output buffer
+    cv::Mat output = cv::Mat::zeros(src.size(), src.type());
+
+    cv::Mat blurred = srcMat.clone();
+    const int gkSize = edgeAOERadius*2 + 1;
+    cv::GaussianBlur(blurred, blurred, cv::Size(gkSize, gkSize), 11);
+
+    const int nRows = src.rows(), nCols = src.cols();
+    const auto [min, max] = getImageRange(src.type());
+
+    for (int r = 0; r < nRows; r++) {
+      for (int c = 0; c < nCols; c++) {
+        int kRadius = linearMap(
+            blurred.at<uchar>(r, c),
+            0, 255,
+            minKernelRadius, maxKernelRadius);
+        int rMin = std::max(0, r - kRadius);
+        int rMax = std::min(nRows - 1, r + kRadius);
+        int cMin = std::max(0, c - kRadius);
+        int cMax = std::min(nCols - 1, c + kRadius);
+        // Look at the submatrix around the current pixel
+        cv::Mat view = srcMat(cv::Range(rMin, rMax), cv::Range(cMin, cMax));
+        // Find the max and its location
+        double maxValue;
+        cv::Point maxLoc;
+        cv::minMaxLoc(view, nullptr, &maxValue, nullptr, &maxLoc);
+        // If the current pixel is the max -> set to 1.0, else -> set to 0.0
+        if (maxLoc.x == kRadius && maxLoc.y == kRadius && maxValue > threshold)
+          output.at<float>(r, c) = max;
+        else
+          output.at<float>(r, c) = min;
+      }
+    }
+
+    // Copy temporary buffer to dst
+    output.copyTo(dstMat);
+  }
+
   void nonMaxSuppress(
       cv::InputArray src,
       cv::OutputArray dst,

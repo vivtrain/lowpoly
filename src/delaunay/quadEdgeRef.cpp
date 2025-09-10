@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <unordered_set>
 
-namespace QE {
+namespace QuadEdge {
 
   void printEndpoints(QuadEdgeRef *edge, const char *label) {
     assert(edge->origCoords.has_value());
@@ -45,6 +45,12 @@ namespace QE {
     return sym()->origCoords;
   }
 
+  std::pair<cv::Point, cv::Point> QuadEdgeRef::points() {
+    assert(origCoords.has_value());
+    assert(termCoords().has_value());
+    return { origCoords.value(), termCoords().value() };
+  }
+
   QuadEdgeRef* makeQuadEdge(cv::Point tail, cv::Point head) {
     // Create four refs
     QuadEdgeRef *self = new QuadEdgeRef();
@@ -78,9 +84,9 @@ namespace QE {
   }
   void splice(QuadEdgeRef *a, QuadEdgeRef *b) {
     assert(
-      (a->origCoords.has_value() && a->termCoords().has_value() && 
+      (a->origCoords.has_value() && a->termCoords().has_value() &&
        b->origCoords.has_value() && b->termCoords().has_value()) ||
-      (!a->origCoords.has_value() && !a->termCoords().has_value() && 
+      (!a->origCoords.has_value() && !a->termCoords().has_value() &&
        !b->origCoords.has_value() && !b->termCoords().has_value())
     );
     swapONexts(a->onext->rot, b->onext->rot);
@@ -130,7 +136,7 @@ namespace QE {
     splice(edge->sym(), edge->sym()->oprev());
     delete edge;
   }
-  
+
   QuadEdgeRef *insertPoint(QuadEdgeRef *polygonEdge, cv::Point point) {
     assert(polygonEdge->origCoords.has_value());
     QuadEdgeRef *firstSpoke

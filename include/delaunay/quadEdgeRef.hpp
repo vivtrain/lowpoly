@@ -5,8 +5,8 @@
 #include <optional>
 #include <vector>
 
-namespace QE {
-  
+namespace QuadEdge {
+
   struct QuadEdgeRef {
     inline QuadEdgeRef(QuadEdgeRef *nextSpoke=nullptr, QuadEdgeRef *rot=nullptr)
       : onext(nextSpoke), rot(rot), origCoords(std::nullopt) {}
@@ -15,6 +15,7 @@ namespace QE {
     QuadEdgeRef* &lnext();
     QuadEdgeRef* &rprev();
     std::optional<cv::Point> &termCoords();
+    std::pair<cv::Point, cv::Point> points();
 
     QuadEdgeRef *onext;
     QuadEdgeRef *rot;

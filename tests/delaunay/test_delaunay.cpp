@@ -16,7 +16,7 @@
 #include "delaunay/quadEdgeRef.hpp"
 
 using namespace std;
-using namespace QE;
+using namespace QuadEdge;
 
 void testSingleQuadEdge() {
   cout << "Testing a single QuadEdgeRef..." << endl;

@@ -10,6 +10,13 @@ namespace util {
       cv::OutputArray dst,
       const uint kSize,
       const double threshold);
+  void adaptiveNonMaxSuppress(
+      cv::InputArray src,
+      cv::OutputArray dst,
+      const int minKernelRadius,
+      const int maxKernelRadius,
+      const int edgeAOERadius,
+      const double threshold);
   void salt(cv::Mat img, const float percent);
   cv::Scalar avgColorInPoly(cv::Mat img, std::vector<cv::Point> polygon);
 }

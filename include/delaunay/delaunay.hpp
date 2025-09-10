@@ -8,11 +8,12 @@
 namespace Delaunay {
   bool inCircle(cv::Point a, cv::Point b, cv::Point c, cv::Point test);
   bool isCCW(cv::Point a, cv::Point b, cv::Point c);
-  bool isLeftOf(cv::Point test, QE::QuadEdgeRef *edge);
-  bool isRightOf(cv::Point test, QE::QuadEdgeRef *edge);
-  bool isAbove(QE::QuadEdgeRef *test, QE::QuadEdgeRef *baseL);
-  QE::QuadEdgeRef* triangulate(std::vector<cv::Point> points);
-  std::vector<std::vector<cv::Point>> extractTriangles(QE::QuadEdgeRef *edge);
+  bool isLeftOf(cv::Point test, QuadEdge::QuadEdgeRef *edge);
+  bool isRightOf(cv::Point test, QuadEdge::QuadEdgeRef *edge);
+  bool isAbove(QuadEdge::QuadEdgeRef *test, QuadEdge::QuadEdgeRef *baseL);
+  QuadEdge::QuadEdgeRef* triangulate(std::vector<cv::Point> points);
+  std::vector<std::vector<cv::Point>>
+    extractTriangles(QuadEdge::QuadEdgeRef *edge);
 }
 
 #endif // !DELAUNAY_HPP
