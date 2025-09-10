@@ -1,7 +1,12 @@
 #include "util.hpp"
+#include <chrono>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <thread>
+#include <vector>
 
 namespace util {
 
@@ -98,6 +103,17 @@ namespace util {
       int c = rng.uniform(0, nCols);
       img.at<float>(r, c) = max;
     }
+  }
+
+  cv::Scalar avgColorInPoly(cv::Mat img, std::vector<cv::Point> polygon) {
+    cv::Rect boundingBox = cv::boundingRect(polygon);
+    cv::Mat view(img, boundingBox);
+    cv::Mat mask = cv::Mat::zeros(boundingBox.size(), CV_8UC1);
+    for (auto &point : polygon)
+      point -= boundingBox.tl();
+    cv::fillConvexPoly(mask, polygon, cv::Scalar(255));
+    cv::Scalar avgColor = cv::mean(view, mask);
+    return avgColor;
   }
 
 }

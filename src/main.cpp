@@ -57,6 +57,20 @@ int main() {
   cv::drawContours(triangulated, triangles, -1, cv::Scalar(1, 1, 1));
   cv::imshow(basename + " - Triangulated", triangulated);
 
+  cv::Mat output(img.size(), CV_8UC3, cv::Scalar(0, 0, 255));
+  cv::RNG rng(time(nullptr));
+  for (uint i = 0; i < triangles.size(); i++) {
+    const auto &triangle = triangles[i];
+    cv::Scalar color = util::avgColorInPoly(img, triangle);
+    cv::fillConvexPoly(
+        output,
+        triangle,
+        color,
+        cv::LINE_AA);
+    printf("%d/%zu triangles\n", i, triangles.size());
+  }
+  cv::imshow(basename + " - Output", output);
+
   while (cv::waitKey(30) != 'q')
     continue;
   cv::destroyAllWindows();
