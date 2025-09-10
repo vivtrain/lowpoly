@@ -31,7 +31,7 @@ int main() {
   util::sobelMagnitude(img, vertImg);
   cv::imshow(basename + " - Sobel magnitude", vertImg);
   // Apply non-max suppression
-  util::adaptiveNonMaxSuppress(vertImg, vertImg, 2, 7, 3, 0.4);
+  util::adaptiveNonMaxSuppress(vertImg, vertImg, 2, 7, 5, 0.4);
   // Salt the image with extra vertices at random
   util::salt(vertImg, 0.001);
   cv::imshow(basename + " - Extracted vertices", vertImg);

@@ -151,7 +151,7 @@ namespace util {
     const int nRows = img.rows, nCols = img.cols;
     const int nGrains = percent * nRows * nCols;
     const int max = getImageRange(img.type()).second;
-    cv::RNG rng;
+    cv::RNG rng(time(nullptr));
     for (int i = 0; i < nGrains; i++) {
       int r = rng.uniform(0, nRows);
       int c = rng.uniform(0, nCols);
