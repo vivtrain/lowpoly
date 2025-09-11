@@ -20,7 +20,7 @@ int main() {
   bool again = true;
   int upscale = 1, downscale = 1;
   // Read in an image from the specified path
-  string imgPath = "../data/headshot.jpg";
+  string imgPath = "../data/me.jpg";
   string basename = imgPath.substr(imgPath.find_last_of('/') + 1);
   cv::Mat img = cv::imread(imgPath);
   if (img.empty())
@@ -28,7 +28,9 @@ int main() {
         "An image was not found at " + imgPath);
   cv::Size origSize(img.size());
   while (again) {
-    printf("\n△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽ lowpoly generator △▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽\n");
+    printf("\n"
+        "▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△ lowpoly generator "
+        "△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽\n");
     printf(
         "Image: %s\n"
         "Original size (w x h): (%d, %d)\n"
@@ -42,7 +44,8 @@ int main() {
           origSize.width/downscale*upscale, origSize.height/downscale*upscale
     );
     cv::Mat downscaled;
-    cv::resize(img, downscaled, cv::Size(img.cols/downscale, img.rows/downscale));
+    cv::Size downSize(img.cols/downscale, img.rows/downscale);
+    cv::resize(img, downscaled, downSize);
     cv::imshow(basename, downscaled);
 
     // Apply Sobel edge detector
@@ -80,13 +83,14 @@ int main() {
     cv::Size outputSize(downscaled.cols * upscale, downscaled.rows * upscale);
 
     cv::Mat triangulated = cv::Mat::zeros(outputSize, CV_8UC3);
-    cv::drawContours(triangulated, upscaledTris, -1, cv::Scalar(200, 100, 100), 1, cv::LINE_AA);
-    for (const auto &triangle : upscaledTris) {
+    cv::drawContours(
+        triangulated, upscaledTris,
+        -1, cv::Scalar(200, 100, 100), 1, cv::LINE_AA);
+    for (const auto &triangle : upscaledTris)
       for (auto &point : triangle)
         cv::circle(
             triangulated, point,
             2, cv::Scalar(255, 0, 255), cv::FILLED, cv::LINE_AA);
-    }
     cv::imshow(basename + " - Triangulated", triangulated);
 
     // Mark any areas not triangulated bright red (known bug)

@@ -131,56 +131,76 @@ struct PointHash {
 };
 
 int main () {
-  // testSingleQuadEdge();
-  // testTriangle();
-  // testPolygon();
-  // testConnect();
-  // testInCircle();
-  // cout << "ALL TESTS PASSED!" << endl;
-  const int IMG_HEIGHT = 10, IMG_WIDTH = 10, N_POINTS = 5, SCALE = 50;
-  unordered_set<cv::Point, PointHash> pointSet;
-  pointSet.insert({1, 1});
-  pointSet.insert({IMG_WIDTH-1, 1});
-  pointSet.insert({1, IMG_HEIGHT-1});
-  pointSet.insert({IMG_WIDTH-1, IMG_HEIGHT-1});
-  cv::RNG rng(time(nullptr));
-  while(pointSet.size() < N_POINTS + 4) {
-    int x = rng.uniform(1, IMG_WIDTH-1);
-    int y = rng.uniform(1, IMG_HEIGHT-1);
-    pointSet.insert({x, y});
-  }
-  vector<cv::Point> points(pointSet.begin(), pointSet.end());
-  QuadEdgeRef *graph = Delaunay::triangulate(points);
-  vector<vector<cv::Point>> triangles
-    = Delaunay::extractTriangles(graph);
+  testSingleQuadEdge();
+  testTriangle();
+  testPolygon();
+  testConnect();
+  testInCircle();
+  cout << "ALL TESTS PASSED!" << endl;
+  cout << "(r)etry/(q)uit" << endl;
+  while (true) {
+    const int IMG_HEIGHT = 100, IMG_WIDTH = 100, N_POINTS = 100, SCALE = 10;
+    unordered_set<cv::Point, PointHash> pointSet;
+    pointSet.insert({1, 1});
+    pointSet.insert({IMG_WIDTH-1, 1});
+    pointSet.insert({1, IMG_HEIGHT-1});
+    pointSet.insert({IMG_WIDTH-1, IMG_HEIGHT-1});
+    cv::RNG rng(time(nullptr));
+    while(pointSet.size() < N_POINTS + 4) {
+      int x = rng.uniform(1, IMG_WIDTH-1);
+      int y = rng.uniform(1, IMG_HEIGHT-1);
+      pointSet.insert({x, y});
+    }
+    vector<cv::Point> points(pointSet.begin(), pointSet.end());
+    QuadEdgeRef *graph = Delaunay::triangulate(points);
+    vector<vector<cv::Point>> triangles
+      = Delaunay::extractTriangles(graph);
 
-  printf("%zu Triangles:\n", triangles.size());
-  for (const auto &s : triangles) {
-    for (const auto &point : s)
-      printf("(%d,%d) ", point.x, point.y);
-    printf("\n");
-  }
+    // printf("%zu Triangles:\n", triangles.size());
+    // for (const auto &s : triangles) {
+    //   for (const auto &point : s)
+    //     printf("(%d,%d) ", point.x, point.y);
+    //   printf("\n");
+    // }
 
-  for (auto &s : triangles) {
-    for (auto &point : s) {
-      point.x *= SCALE;
-      point.y *= SCALE;
+    for (auto &s : triangles)
+      for (auto &point : s)
+        point *= SCALE;
+    for (auto &point : points)
+      point *= SCALE;
+
+    cv::Mat img(IMG_HEIGHT*SCALE, IMG_WIDTH*SCALE, CV_8UC3, cv::Scalar(100, 100, 100));
+    for (const auto &triangle : triangles)
+      cv::fillConvexPoly(img, triangle, cv::Scalar(0, 0, 0));
+    cv::drawContours(img, triangles, -1, cv::Scalar(255, 100, 100), 2);
+    for (const auto &point : points)
+      cv::circle(img, point, 3, cv::Scalar(100, 0, 255), cv::FILLED);
+    for (const auto &triangle : triangles) {
+      cv::Point centroid(0, 0);
+      for (const auto &point : triangle)
+        centroid += point;
+      centroid /= 3;
+      cv::circle(img, centroid, 3, cv::Scalar(0, 255, 255));
+    }
+    cv::flip(img, img, 0);
+    cv::imshow("delaunay output", img);
+
+    int key = '_';
+    while (true) {
+      key = cv::waitKey(50);
+      bool doBreak = false;
+      switch(key) {
+        case 'q':
+          cv::destroyAllWindows();
+          exit(0);
+          break;
+        case 'r':
+          doBreak = true;
+          break;
+      }
+      if (doBreak)
+        break;
     }
   }
-  for (auto &point : points) {
-    point.x *= SCALE;
-    point.y *= SCALE;
-  }
-
-  cv::Mat img = cv::Mat::zeros(IMG_HEIGHT*SCALE, IMG_WIDTH*SCALE, CV_8UC3);
-  cv::drawContours(img, triangles, -1, cv::Scalar(255, 100, 100), 2);
-  for (const auto &point : points)
-    cv::circle(img, point, 3, cv::Scalar(100, 0, 255), 5);
-  cv::flip(img, img, 0);
-  cv::imshow("delaunay output", img);
-
-  while (cv::waitKey(30) != 'q')
-    continue;
-  cv::destroyAllWindows();
 }
 
