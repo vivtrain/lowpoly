@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <iostream>
+#include <cstdlib>
 #include <opencv2/core.hpp>
 #include <opencv2/core/base.hpp>
 #include <opencv2/core/hal/interface.h>
@@ -17,64 +17,143 @@ using namespace std;
 using namespace QuadEdge;
 
 int main() {
-  // Read in image
-  string imgPath = "../data/me.jpg";
+  bool again = true;
+  int upscale = 1, downscale = 1;
+  // Read in an image from the specified path
+  string imgPath = "../data/headshot.jpg";
   string basename = imgPath.substr(imgPath.find_last_of('/') + 1);
   cv::Mat img = cv::imread(imgPath);
-  const int DOWNSCALE = 2;
-  cv::resize(img, img, cv::Size(img.cols/DOWNSCALE, img.rows/DOWNSCALE));
-  printf("%s image size: %d x %d\n", basename.c_str(), img.cols, img.rows);
-  cv::imshow(basename, img);
+  if (img.empty())
+    CV_Error(cv::Error::StsObjectNotFound,
+        "An image was not found at " + imgPath);
+  cv::Size origSize(img.size());
+  while (again) {
+    printf("\n△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽ lowpoly generator △▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽\n");
+    printf(
+        "Image: %s\n"
+        "Original size (w x h): (%d, %d)\n"
+        "Downscale factor (preprocess): %d -> (%d, %d)\n"
+        "Upscale factor (postprocess): %d -> (%d, %d)\n",
+        imgPath.c_str(),
+        origSize.width, origSize.height,
+        downscale,
+          origSize.width/downscale, origSize.height/downscale,
+        upscale,
+          origSize.width/downscale*upscale, origSize.height/downscale*upscale
+    );
+    cv::Mat downscaled;
+    cv::resize(img, downscaled, cv::Size(img.cols/downscale, img.rows/downscale));
+    cv::imshow(basename, downscaled);
 
-  // Apply Sobel
-  cv::Mat vertImg;
-  util::sobelMagnitude(img, vertImg);
-  cv::imshow(basename + " - Sobel magnitude", vertImg);
-  // Apply non-max suppression
-  util::adaptiveNonMaxSuppress(vertImg, vertImg, 2, 7, 5, 0.4);
-  // Salt the image with extra vertices at random
-  util::salt(vertImg, 0.001);
-  cv::imshow(basename + " - Extracted vertices", vertImg);
+    // Apply Sobel edge detector
+    cv::Mat sobelImg;
+    util::sobelMagnitude(downscaled, sobelImg);
+    cv::imshow(basename + " - Sobel magnitude", sobelImg);
 
-  // Extract vertices from image
-  vector<cv::Point> vertices;
-  cv::findNonZero(vertImg, vertices);
-  // Include corners
-  vertices.push_back({0, 0});
-  vertices.push_back({0, vertImg.rows - 1});
-  vertices.push_back({vertImg.cols - 1, 0});
-  vertices.push_back({vertImg.cols - 1, vertImg.rows - 1});
-  cout << vertices.size() << " Vertices" << endl;
+    // Apply non-max suppression
+    cv::Mat vertexImg;
+    util::adaptiveNonMaxSuppress(sobelImg, vertexImg, 2, 7, 5, 0.4);
+    // Salt the image with extra vertices at random
+    util::salt(vertexImg, 0.001);
+    // Include the corners
+    float maxValue = util::getImageRange(vertexImg.type()).second;
+    vertexImg.at<float>({0, 0}) = 
+    vertexImg.at<float>({0, vertexImg.rows - 1}) = 
+    vertexImg.at<float>({vertexImg.cols - 1, 0}) = 
+    vertexImg.at<float>({vertexImg.cols - 1, vertexImg.rows - 1}) = maxValue;
+    cv::imshow(basename + " - Extracted vertices", vertexImg);
 
-  QuadEdgeRef *triangulation = Delaunay::triangulate(vertices);
-  vector<vector<cv::Point>> triangles
-    = Delaunay::extractTriangles(triangulation);
+    // Extract vertices from the vertex image
+    vector<cv::Point> vertices;
+    cv::findNonZero(vertexImg, vertices);
+    printf("• %zu Vertices\n", vertices.size());
+    // Construct the Delaunay triangulation of the vertex set
+    QuadEdgeRef *triangulation = Delaunay::triangulate(vertices);
+    vector<vector<cv::Point>> ogTriangles
+      = Delaunay::extractTriangles(triangulation), upscaledTris(ogTriangles);
+    printf("△ %zu Triangles\n", ogTriangles.size());
 
-  cv::Mat triangulated = cv::Mat::zeros(vertImg.size(), vertImg.type());
-  printf("triangulated image size: %d x %d\n", img.cols, img.rows);
-  cv::drawContours(triangulated, triangles, -1, cv::Scalar(1, 1, 1));
-  cv::imshow(basename + " - Triangulated", triangulated);
+    // Scale the output back up
+    for (auto &triangle : upscaledTris)
+      for (auto &point : triangle)
+        point *= upscale;
+    cv::Size outputSize(downscaled.cols * upscale, downscaled.rows * upscale);
 
-  cv::Mat output(img.size(), CV_8UC3, cv::Scalar(0, 0, 255));
-  cv::RNG rng(time(nullptr));
-  printf("%d/%zu triangles\n", 0, triangles.size());
-  for (uint i = 0; i < triangles.size(); i++) {
-    printf("\e[F\e[2K\r");
-    const auto &triangle = triangles[i];
-    cv::Scalar color = util::avgColorInPoly(img, triangle);
-    cv::fillConvexPoly(
-        output,
-        triangle,
-        color,
-        cv::LINE_AA);
-    printf("%d/%zu triangles\n", i, triangles.size());
+    cv::Mat triangulated = cv::Mat::zeros(outputSize, CV_8UC3);
+    cv::drawContours(triangulated, upscaledTris, -1, cv::Scalar(200, 100, 100), 1, cv::LINE_AA);
+    for (const auto &triangle : upscaledTris) {
+      for (auto &point : triangle)
+        cv::circle(
+            triangulated, point,
+            2, cv::Scalar(255, 0, 255), cv::FILLED, cv::LINE_AA);
+    }
+    cv::imshow(basename + " - Triangulated", triangulated);
+
+    // Mark any areas not triangulated bright red (known bug)
+    cv::Mat output(outputSize, CV_8UC3, cv::Scalar(0, 0, 255));
+    cv::RNG rng(time(nullptr));
+    for (uint i = 0; i < upscaledTris.size(); i++) {
+      const auto &ogTri = ogTriangles[i];
+      const auto &upTri = upscaledTris[i];
+      cv::Scalar color = util::avgColorInPoly(downscaled, ogTri);
+      cv::fillConvexPoly(output, upTri, color, cv::LINE_AA);
+    }
+    cv::imshow(basename + " - Output", output);
+
+    // Interactive state machine to adjust output
+    printf("\nIn any preview window:\n"
+        "▶ q: quit\n"
+        "▶ r: re-triangulate\n"
+        "▶ w: write output\n"
+        "▶ u: decrease input downscale (min of 1)\n"
+        "▶ d: increase input downscale\n"
+        "▶ U: increase output upscale\n"
+        "▶ D: decrease output upscale (min of 1)\n");
+    char key = '_';
+    while (true) {
+      key = cv::waitKey(50);
+      bool doBreak = false;
+      switch(key) {
+        case 'q':
+          cv::destroyAllWindows();
+          doBreak = true;
+          again = false;
+          break;
+        case 'r':
+          doBreak = true;
+          break;
+        case 'w':
+          {
+            string newPath = imgPath;
+            size_t i = newPath.find(".jpg");
+            newPath.insert(i, "_lowpoly");
+            cv::imwrite(newPath, output);
+            doBreak = true;
+            again = false;
+            break;
+          }
+        case 'u':
+          downscale = std::max(1, downscale - 1);
+          doBreak = true;
+          break;
+        case 'd':
+          downscale++;
+          doBreak = true;
+          break;
+        case 'U':
+          upscale++;
+          doBreak = true;
+          break;
+        case 'D':
+          upscale = std::max(1, upscale - 1);
+          doBreak = true;
+          break;
+        default:
+          break;
+      }
+      if (doBreak)
+        break;
+    }
   }
-  printf("\e[F\e[2K\r");
-  printf("%zu triangles drawn\n", triangles.size());
-  cv::imshow(basename + " - Output", output);
-
-  while (cv::waitKey(30) != 'q')
-    continue;
-  cv::destroyAllWindows();
 }
 
