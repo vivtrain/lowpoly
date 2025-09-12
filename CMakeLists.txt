@@ -53,18 +53,18 @@ set_target_properties(test_delaunay PROPERTIES
 # End Delaunay #################################################################
 
 # Main Executable ##############################################################
-# Define an executable target for generate
+# Define an executable target for lowpoly
 file(GLOB SRC_FILES "src/*.cpp")
-add_executable(generate ${SRC_FILES})
+add_executable(lowpoly ${SRC_FILES})
 # Include the project-wide includes and OpenCV
-target_include_directories(generate
+target_include_directories(lowpoly
   PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/third_party
     ${OpenCV_INCLUDE_DIRS}
 )
 # Link target against OpenCV and Delaunay
-target_link_libraries(generate
+target_link_libraries(lowpoly
   PRIVATE
     delaunay
     ${OpenCV_LIBS}

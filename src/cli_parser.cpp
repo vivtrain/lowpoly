@@ -1,50 +1,79 @@
 #include "cli_parser.h"
 #include "argparse/argparse.hpp"
 #include <cstdio>
+#include <exception>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
 using namespace std;
 
 void CliOptions::parse(int argc, char* argv[]) {
-  argparse::ArgumentParser parser("generate");
-  parser.add_argument("input")
-    .help("Path to input image");
-  parser.add_argument("-o", "--output")
-    .help("Output image path");
-  parser.add_argument("-d", "--preproc-scale")
-    .help("Initial preprocessing scale factor")
-    .scan<'g', float>()
-    .default_value(preprocScale);
-  parser.add_argument("-s", "--target-input-width")
-    .help("Scale the input image to this size before processing (overrides -d)")
-    .scan<'i', int>();
-  parser.add_argument("-U", "--postproc-scale")
-    .help("Final postprocessing scale factor")
-    .scan<'g', float>()
-    .default_value(postprocScale);
-  parser.add_argument("-S", "--target-output-width")
-    .help("Scale the output image to this size after processing (overrides -U)")
-    .scan<'i', int>();
-  parser.add_argument("-t", "--edge-threshold")
-    .help("Minimum edge strength on the interval [0.0, 1.0] (default 0.4)")
-    .scan<'g', float>()
-    .default_value(edgeThreshold);
-  parser.add_argument("-a", "--edge-aoe")
-    .help("Area of effect of edges in adaptive non-max suppression (default 5)")
-    .scan<'i', int>()
-    .default_value(edgeAOE);
-  parser.add_argument("-k", "--anms-kernel-range")
-    .help("Range of adaptive non-max suppression kernel radius (default 2-7)")
-    .default_value(to_string(anmsKernelRange.first)
-        + '-' + to_string(anmsKernelRange.second));
-  parser.add_argument("-p", "--salt-percent")
-    .help("Frequency of random salt added prior to triangulation (default 0.001)")
-    .scan<'g', float>()
-    .default_value(saltPercent);
+  string programName = argv[0];
+  programName = programName.substr(programName.find_last_of('/') + 1);
+  argparse::ArgumentParser parser(programName);
+  parser.set_usage_max_line_width(80);
+  parser.add_usage_newline();
+  parser.add_description("Low-poly image generator.");
 
-  parser.parse_args(argc, argv);
+  parser.add_argument("input")
+    .help("Path to input image")
+    .metavar("FILE");
+  parser.add_argument("-o", "--output")
+    .help("Output image path")
+    .metavar("PATH").nargs(1);
+  parser.add_argument("-s", "--preproc-scale")
+    .help("Initial preprocessing scale factor")
+    .metavar("SCALE")
+    .default_value(preprocScale)
+    .scan<'g', float>().nargs(1);
+  parser.add_argument("-w", "--target-input-width")
+    .help("Scale the input image to this size before processing (overrides -s)")
+    .metavar("WIDTH")
+    .scan<'i', int>().nargs(1);
+  parser.add_argument("-S", "--postproc-scale")
+    .help("Final postprocessing scale factor")
+    .metavar("SCALE")
+    .default_value(postprocScale)
+    .scan<'g', float>().nargs(1);
+  parser.add_argument("-W", "--target-output-width")
+    .help("Scale the output image to this size after processing (overrides -S)")
+    .metavar("WIDTH")
+    .scan<'i', int>().nargs(1);
+  parser.add_argument("-t", "--edge-threshold")
+    .help("Minimum edge strength on the interval [0.0, 1.0]")
+    .metavar("THRESHOLD")
+    .default_value(edgeThreshold)
+    .scan<'g', float>().nargs(1);
+  parser.add_argument("-a", "--edge-aoe")
+    .help("Area of effect of edges in adaptive non-max suppression")
+    .metavar("RADIUS")
+    .default_value(edgeAOE)
+    .scan<'i', int>().nargs(1);
+  parser.add_argument("-k", "--anms-kernel-range")
+    .help("Range of adaptive non-max suppression kernel radius")
+    .metavar("RANGE")
+    .default_value(to_string(anmsKernelRange.first)
+        + '-' + to_string(anmsKernelRange.second)).nargs(1);
+  parser.add_argument("-p", "--salt-percent")
+    .help("Frequency of random salt added prior to triangulation")
+    .metavar("PROBABILITY")
+    .default_value(saltPercent)
+    .scan<'g', float>().nargs(1);
+  parser.add_argument("--silent")
+    .help("Suppress normal output")
+    .flag();
+  parser.add_argument("--non-interactive")
+    .help("Suppress GUI and interactive loop. Directly write the output.")
+    .flag();
+
+  try {
+    parser.parse_args(argc, argv);
+  } catch (const exception &e) {
+    cerr << endl << parser.usage() << endl;
+    exit(1);
+  }
   // input path
   string inPath = parser.get("input");
   if (!ifstream(inPath).good())
@@ -117,5 +146,9 @@ void CliOptions::parse(int argc, char* argv[]) {
   if (sp < 0.0f || sp > 1.0f)
     throw invalid_argument("Salt percent value must be within [0.0, 1.0]");
   saltPercent = sp;
+  // silent
+  silent = parser.get<bool>("--silent");
+  // non-interactive
+  nonInteractive = parser.get<bool>("--non-interactive");
 }
 

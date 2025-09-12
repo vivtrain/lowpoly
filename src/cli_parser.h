@@ -16,6 +16,8 @@ struct CliOptions {
   int edgeAOE = 5;
   std::pair<uint, uint> anmsKernelRange {2, 7};
   float saltPercent = 0.001f;
+  bool silent = false;
+  bool nonInteractive = false;
 };
 
 #endif // !CLI_PARSER_HPP
