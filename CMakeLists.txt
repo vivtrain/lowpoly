@@ -54,7 +54,7 @@ set_target_properties(test_delaunay PROPERTIES
 
 # Main Executable ##############################################################
 # Define an executable target for generate
-add_executable(generate src/main.cpp src/util.cpp)
+add_executable(generate src/main.cpp src/imgutil.cpp)
 # Include the project-wide includes and OpenCV
 target_include_directories(generate
   PRIVATE

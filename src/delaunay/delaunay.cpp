@@ -12,11 +12,11 @@
 #include <unordered_set>
 #include <vector>
 
-namespace Delaunay {
+namespace delaunay {
 
   using namespace std;
   using namespace cv;
-  using namespace QuadEdge;
+  using namespace quadedge;
 
   struct comparePoints {
     bool operator()(const Point &a, const Point &b) const {

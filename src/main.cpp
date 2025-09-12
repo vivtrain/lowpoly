@@ -11,10 +11,10 @@
 #include <string>
 #include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
-#include "util.hpp"
+#include "imgutil.hpp"
 
 using namespace std;
-using namespace QuadEdge;
+using namespace quadedge;
 
 int main() {
   bool again = true;
@@ -50,16 +50,16 @@ int main() {
 
     // Apply Sobel edge detector
     cv::Mat sobelImg;
-    util::sobelMagnitude(downscaled, sobelImg);
+    imgutil::sobelMagnitude(downscaled, sobelImg);
     cv::imshow(basename + " - Sobel magnitude", sobelImg);
 
     // Apply non-max suppression
     cv::Mat vertexImg;
-    util::adaptiveNonMaxSuppress(sobelImg, vertexImg, 2, 7, 5, 0.4);
+    imgutil::adaptiveNonMaxSuppress(sobelImg, vertexImg, 2, 7, 5, 0.4);
     // Salt the image with extra vertices at random
-    util::salt(vertexImg, 0.001);
+    imgutil::salt(vertexImg, 0.001);
     // Include the corners
-    float maxValue = util::getImageRange(vertexImg.type()).second;
+    float maxValue = imgutil::getImageRange(vertexImg.type()).second;
     vertexImg.at<float>({0, 0}) = 
     vertexImg.at<float>({0, vertexImg.rows - 1}) = 
     vertexImg.at<float>({vertexImg.cols - 1, 0}) = 
@@ -71,9 +71,9 @@ int main() {
     cv::findNonZero(vertexImg, vertices);
     printf("• %zu Vertices\n", vertices.size());
     // Construct the Delaunay triangulation of the vertex set
-    QuadEdgeRef *triangulation = Delaunay::triangulate(vertices);
+    QuadEdgeRef *triangulation = delaunay::triangulate(vertices);
     vector<vector<cv::Point>> ogTriangles
-      = Delaunay::extractTriangles(triangulation), upscaledTris(ogTriangles);
+      = delaunay::extractTriangles(triangulation), upscaledTris(ogTriangles);
     printf("△ %zu Triangles\n", ogTriangles.size());
 
     // Scale the output back up
@@ -82,6 +82,7 @@ int main() {
         point *= upscale;
     cv::Size outputSize(downscaled.cols * upscale, downscaled.rows * upscale);
 
+    // Build the triangulated image (just for show)
     cv::Mat triangulated = cv::Mat::zeros(outputSize, CV_8UC3);
     cv::drawContours(
         triangulated, upscaledTris,
@@ -95,11 +96,12 @@ int main() {
 
     // Mark any areas not triangulated bright red (known bug)
     cv::Mat output(outputSize, CV_8UC3, cv::Scalar(0, 0, 255));
-    cv::RNG rng(time(nullptr));
+
+    // Generate the final lowpoly output
     for (uint i = 0; i < upscaledTris.size(); i++) {
       const auto &ogTri = ogTriangles[i];
       const auto &upTri = upscaledTris[i];
-      cv::Scalar color = util::avgColorInPoly(downscaled, ogTri);
+      cv::Scalar color = imgutil::avgColorInPoly(downscaled, ogTri);
       cv::fillConvexPoly(output, upTri, color, cv::LINE_AA);
     }
     cv::imshow(basename + " - Output", output);

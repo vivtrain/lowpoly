@@ -2,7 +2,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/opencv.hpp>
 
-namespace util {
+namespace imgutil {
   std::pair<double, double> getImageRange(int type);
   void sobelMagnitude(cv::InputArray src, cv::OutputArray dst);
   void nonMaxSuppress(

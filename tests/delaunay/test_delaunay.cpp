@@ -16,7 +16,7 @@
 #include "delaunay/quadEdgeRef.hpp"
 
 using namespace std;
-using namespace QuadEdge;
+using namespace quadedge;
 
 void testSingleQuadEdge() {
   cout << "Testing a single QuadEdgeRef..." << endl;
@@ -116,10 +116,10 @@ void testConnect() {
 
 void testInCircle() {
   cout << "Testing InCircle..." << endl;
-  assert(Delaunay::inCircle({2,2}, {6,0}, {8,6}, {4,2}));
-  assert(Delaunay::inCircle({2,2}, {8,6}, {6,0}, {4,2}));
-  assert(!Delaunay::inCircle({2,2}, {6,0}, {8,6}, {5,8}));
-  assert(!Delaunay::inCircle({2,2}, {8,6}, {6,0}, {5,8}));
+  assert(delaunay::inCircle({2,2}, {6,0}, {8,6}, {4,2}));
+  assert(delaunay::inCircle({2,2}, {8,6}, {6,0}, {4,2}));
+  assert(!delaunay::inCircle({2,2}, {6,0}, {8,6}, {5,8}));
+  assert(!delaunay::inCircle({2,2}, {8,6}, {6,0}, {5,8}));
   cout << "✅  Verified circle test" << endl;
 }
 
@@ -152,9 +152,9 @@ int main () {
       pointSet.insert({x, y});
     }
     vector<cv::Point> points(pointSet.begin(), pointSet.end());
-    QuadEdgeRef *graph = Delaunay::triangulate(points);
+    QuadEdgeRef *graph = delaunay::triangulate(points);
     vector<vector<cv::Point>> triangles
-      = Delaunay::extractTriangles(graph);
+      = delaunay::extractTriangles(graph);
 
     // printf("%zu Triangles:\n", triangles.size());
     // for (const auto &s : triangles) {

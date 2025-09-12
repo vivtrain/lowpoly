@@ -5,15 +5,15 @@
 #include <opencv2/core/types.hpp>
 #include <vector>
 
-namespace Delaunay {
+namespace delaunay {
   bool inCircle(cv::Point a, cv::Point b, cv::Point c, cv::Point test);
   bool isCCW(cv::Point a, cv::Point b, cv::Point c);
-  bool isLeftOf(cv::Point test, QuadEdge::QuadEdgeRef *edge);
-  bool isRightOf(cv::Point test, QuadEdge::QuadEdgeRef *edge);
-  bool isAbove(QuadEdge::QuadEdgeRef *test, QuadEdge::QuadEdgeRef *baseL);
-  QuadEdge::QuadEdgeRef* triangulate(std::vector<cv::Point> points);
+  bool isLeftOf(cv::Point test, quadedge::QuadEdgeRef *edge);
+  bool isRightOf(cv::Point test, quadedge::QuadEdgeRef *edge);
+  bool isAbove(quadedge::QuadEdgeRef *test, quadedge::QuadEdgeRef *baseL);
+  quadedge::QuadEdgeRef* triangulate(std::vector<cv::Point> points);
   std::vector<std::vector<cv::Point>>
-    extractTriangles(QuadEdge::QuadEdgeRef *edge);
+    extractTriangles(quadedge::QuadEdgeRef *edge);
 }
 
 #endif // !DELAUNAY_HPP

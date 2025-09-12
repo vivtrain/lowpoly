@@ -5,7 +5,7 @@
 #include <optional>
 #include <vector>
 
-namespace QuadEdge {
+namespace quadedge {
 
   struct QuadEdgeRef {
     inline QuadEdgeRef(QuadEdgeRef *nextSpoke=nullptr, QuadEdgeRef *rot=nullptr)

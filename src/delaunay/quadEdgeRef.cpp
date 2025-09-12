@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <unordered_set>
 
-namespace QuadEdge {
+namespace quadedge {
 
   void printEndpoints(QuadEdgeRef *edge, const char *label) {
     assert(edge->origCoords.has_value());

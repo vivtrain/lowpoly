@@ -1,14 +1,12 @@
-#include "util.hpp"
-#include <chrono>
+#include "imgutil.hpp"
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <thread>
 #include <vector>
 
-namespace util {
+namespace imgutil {
 
   std::pair<double, double> getImageRange(int type) {
     switch (CV_MAT_DEPTH(type)) {
