@@ -13,8 +13,7 @@ namespace imgutil {
   void adaptiveNonMaxSuppress(
       cv::InputArray src,
       cv::OutputArray dst,
-      const int minKernelRadius,
-      const int maxKernelRadius,
+      const std::pair<int, int> &kernelRange,
       const int edgeAOERadius,
       const double threshold);
   void salt(cv::Mat img, const float percent);

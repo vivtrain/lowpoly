@@ -56,8 +56,7 @@ namespace imgutil {
   void adaptiveNonMaxSuppress(
       cv::InputArray src,
       cv::OutputArray dst,
-      const int minKernelRadius,
-      const int maxKernelRadius,
+      const std::pair<int, int> &kernelRange,
       const int edgeAOERadius,
       const double threshold) {
 
@@ -69,7 +68,7 @@ namespace imgutil {
 
     cv::Mat blurred = srcMat.clone();
     const int gkSize = edgeAOERadius*2 + 1;
-    cv::GaussianBlur(blurred, blurred, cv::Size(gkSize, gkSize), 11);
+    cv::GaussianBlur(blurred, blurred, cv::Size(gkSize, gkSize), edgeAOERadius);
 
     const int nRows = src.rows(), nCols = src.cols();
     const auto [min, max] = getImageRange(src.type());
@@ -79,7 +78,7 @@ namespace imgutil {
         int kRadius = linearMap(
             blurred.at<uchar>(r, c),
             0, 255,
-            minKernelRadius, maxKernelRadius);
+            kernelRange.first , kernelRange.second);
         int rMin = std::max(0, r - kRadius);
         int rMax = std::min(nRows - 1, r + kRadius);
         int cMin = std::max(0, c - kRadius);

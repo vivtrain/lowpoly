@@ -9,6 +9,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include "cli_parser.hpp"
 #include "delaunay/delaunay.hpp"
 #include "delaunay/quadEdgeRef.hpp"
 #include "imgutil.hpp"
@@ -16,48 +17,61 @@
 using namespace std;
 using namespace quadedge;
 
-int main() {
+int main(int argc, char *argv[]) {
+
+  // Parse command-line arguments
+  CliOptions opts;
+  opts.parse(argc, argv);
+  const CliOptions &o(opts);
+
   bool again = true;
-  int upscale = 1, downscale = 1;
   // Read in an image from the specified path
-  string imgPath = "../data/me.jpg";
-  string basename = imgPath.substr(imgPath.find_last_of('/') + 1);
-  cv::Mat img = cv::imread(imgPath);
+  string basename = o.inputPath.substr(o.inputPath.find_last_of('/') + 1);
+  cv::Mat img = cv::imread(o.inputPath);
   if (img.empty())
     CV_Error(cv::Error::StsObjectNotFound,
-        "An image was not found at " + imgPath);
+        "A readable image was not found at " + o.inputPath);
   cv::Size origSize(img.size());
   while (again) {
-    printf("\n"
+    cv::Size inputSize(
+        origSize.width * o.preprocScale,
+        origSize.height * o.preprocScale);
+    cv::Size outputSize(
+        inputSize.width * o.postprocScale,
+        inputSize.height * o.postprocScale);
+    printf("\e[2J\e[H\n"
         "▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△ lowpoly generator "
-        "△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽\n");
+        "△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽△▽\n\n");
     printf(
         "Image: %s\n"
         "Original size (w x h): (%d, %d)\n"
-        "Downscale factor (preprocess): %d -> (%d, %d)\n"
-        "Upscale factor (postprocess): %d -> (%d, %d)\n",
-        imgPath.c_str(),
+        "Pre-process scaling: %.3f -> (%d, %d)\n"
+        "Post-process scaling: %.3f -> (%d, %d)\n",
+        o.inputPath.c_str(),
         origSize.width, origSize.height,
-        downscale,
-          origSize.width/downscale, origSize.height/downscale,
-        upscale,
-          origSize.width/downscale*upscale, origSize.height/downscale*upscale
+        o.preprocScale, inputSize.width, inputSize.height,
+        o.postprocScale, outputSize.width, outputSize.height
     );
-    cv::Mat downscaled;
-    cv::Size downSize(img.cols/downscale, img.rows/downscale);
-    cv::resize(img, downscaled, downSize);
-    cv::imshow(basename, downscaled);
+
+    // Scale the input
+    cv::Mat inputImg;
+    cv::resize(img, inputImg, inputSize);
+    cv::imshow(basename, inputImg);
+    printf("▲ Scaled for processing\n");
 
     // Apply Sobel edge detector
     cv::Mat sobelImg;
-    imgutil::sobelMagnitude(downscaled, sobelImg);
+    imgutil::sobelMagnitude(inputImg, sobelImg);
+    printf("▲ Edges extracted\n");
     cv::imshow(basename + " - Sobel magnitude", sobelImg);
 
     // Apply non-max suppression
     cv::Mat vertexImg;
-    imgutil::adaptiveNonMaxSuppress(sobelImg, vertexImg, 2, 7, 5, 0.4);
+    imgutil::adaptiveNonMaxSuppress(
+        sobelImg, vertexImg,
+        o.anmsKernelRange, o.edgeAOE, o.edgeThreshold);
     // Salt the image with extra vertices at random
-    imgutil::salt(vertexImg, 0.001);
+    imgutil::salt(vertexImg, o.saltPercent);
     // Include the corners
     float maxValue = imgutil::getImageRange(vertexImg.type()).second;
     vertexImg.at<float>({0, 0}) = 
@@ -69,18 +83,17 @@ int main() {
     // Extract vertices from the vertex image
     vector<cv::Point> vertices;
     cv::findNonZero(vertexImg, vertices);
-    printf("• %zu Vertices\n", vertices.size());
+    printf("• %zu Vertices extracted\n", vertices.size());
     // Construct the Delaunay triangulation of the vertex set
     QuadEdgeRef *triangulation = delaunay::triangulate(vertices);
     vector<vector<cv::Point>> ogTriangles
       = delaunay::extractTriangles(triangulation), upscaledTris(ogTriangles);
-    printf("△ %zu Triangles\n", ogTriangles.size());
+    printf("△ %zu Triangles generated\n", ogTriangles.size());
 
     // Scale the output back up
     for (auto &triangle : upscaledTris)
       for (auto &point : triangle)
-        point *= upscale;
-    cv::Size outputSize(downscaled.cols * upscale, downscaled.rows * upscale);
+        point *= o.postprocScale;
 
     // Build the triangulated image (just for show)
     cv::Mat triangulated = cv::Mat::zeros(outputSize, CV_8UC3);
@@ -92,6 +105,7 @@ int main() {
         cv::circle(
             triangulated, point,
             2, cv::Scalar(255, 0, 255), cv::FILLED, cv::LINE_AA);
+    printf("▲ Triangulated\n");
     cv::imshow(basename + " - Triangulated", triangulated);
 
     // Mark any areas not triangulated bright red (known bug)
@@ -101,9 +115,10 @@ int main() {
     for (uint i = 0; i < upscaledTris.size(); i++) {
       const auto &ogTri = ogTriangles[i];
       const auto &upTri = upscaledTris[i];
-      cv::Scalar color = imgutil::avgColorInPoly(downscaled, ogTri);
+      cv::Scalar color = imgutil::avgColorInPoly(inputImg, ogTri);
       cv::fillConvexPoly(output, upTri, color, cv::LINE_AA);
     }
+    printf("▲ Output generated\n");
     cv::imshow(basename + " - Output", output);
 
     // Interactive state machine to adjust output
@@ -130,28 +145,25 @@ int main() {
           break;
         case 'w':
           {
-            string newPath = imgPath;
-            size_t i = newPath.find(".jpg");
-            newPath.insert(i, "_lowpoly");
-            cv::imwrite(newPath, output);
+            cv::imwrite(o.outputPath, output);
             doBreak = true;
             again = false;
             break;
           }
         case 'u':
-          downscale = std::max(1, downscale - 1);
+          opts.preprocScale *= 2;
           doBreak = true;
           break;
         case 'd':
-          downscale++;
+          opts.preprocScale /= 2;
           doBreak = true;
           break;
         case 'U':
-          upscale++;
+          opts.postprocScale *= 2;
           doBreak = true;
           break;
         case 'D':
-          upscale = std::max(1, upscale - 1);
+          opts.postprocScale /= 2;
           doBreak = true;
           break;
         default:
