@@ -1,7 +1,7 @@
 #ifndef DELAUNAY_HPP
 #define DELAUNAY_HPP
 
-#include "delaunay/quadEdgeRef.hpp"
+#include "delaunay/quad_edge_ref.h"
 #include <opencv2/core/types.hpp>
 #include <vector>
 

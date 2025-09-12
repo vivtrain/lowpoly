@@ -1,8 +1,7 @@
-#include "cli_parser.hpp"
+#include "cli_parser.h"
 #include "argparse/argparse.hpp"
 #include <cstdio>
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 

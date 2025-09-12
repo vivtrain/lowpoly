@@ -1,5 +1,5 @@
-#include "delaunay/delaunay.hpp"
-#include "delaunay/quadEdgeRef.hpp"
+#include "delaunay/delaunay.h"
+#include "delaunay/quad_edge_ref.h"
 #include <algorithm>
 #include <cstddef>
 #include <functional>

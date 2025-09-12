@@ -27,7 +27,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Create a target library for Delaunay
 add_library(delaunay STATIC
   src/delaunay/delaunay.cpp
-  src/delaunay/quadEdgeRef.cpp
+  src/delaunay/quad_edge_ref.cpp
 )
 # Tell CMake where necessary headers are, expose these to anyone who links
 target_include_directories(delaunay

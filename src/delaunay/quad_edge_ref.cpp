@@ -1,4 +1,4 @@
-#include "delaunay/quadEdgeRef.hpp"
+#include "delaunay/quad_edge_ref.h"
 #include <cassert>
 #include <optional>
 #include <stdexcept>

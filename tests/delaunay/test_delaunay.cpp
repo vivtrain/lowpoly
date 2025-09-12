@@ -12,8 +12,8 @@
 #include <sys/types.h>
 #include <unordered_set>
 #include <vector>
-#include "delaunay/delaunay.hpp"
-#include "delaunay/quadEdgeRef.hpp"
+#include "delaunay/delaunay.h"
+#include "delaunay/quad_edge_ref.h"
 
 using namespace std;
 using namespace quadedge;

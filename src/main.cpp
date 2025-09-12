@@ -9,10 +9,10 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include "cli_parser.hpp"
-#include "delaunay/delaunay.hpp"
-#include "delaunay/quadEdgeRef.hpp"
-#include "imgutil.hpp"
+#include "cli_parser.h"
+#include "delaunay/delaunay.h"
+#include "delaunay/quad_edge_ref.h"
+#include "img_util.h"
 
 using namespace std;
 using namespace quadedge;
