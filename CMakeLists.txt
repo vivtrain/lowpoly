@@ -59,6 +59,7 @@ add_executable(generate src/main.cpp src/imgutil.cpp)
 target_include_directories(generate
   PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/third_party
     ${OpenCV_INCLUDE_DIRS}
 )
 # Link target against OpenCV and Delaunay
