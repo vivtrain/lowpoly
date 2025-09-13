@@ -11,7 +11,12 @@ using namespace std;
 
 void CliOptions::parse(int argc, char* argv[]) {
   string programName = argv[0];
-  programName = programName.substr(programName.find_last_of('/') + 1);
+  size_t lastSlash = programName.find_last_of('/'), nameStart;
+  if (lastSlash == string::npos)
+    nameStart = 0;
+  else
+    nameStart = lastSlash + 1;
+  programName = programName.substr(nameStart);
   argparse::ArgumentParser parser(programName);
   parser.set_usage_max_line_width(80);
   parser.add_usage_newline();
@@ -81,20 +86,25 @@ void CliOptions::parse(int argc, char* argv[]) {
   inputPath = inPath; 
   // output path (default to same directory as input but with _lowpoly suffix)
   if (parser.present("--output")) {
-    outputPath = triangulatedPath = vertexPath = sobelPath = parser.get("--output");
-    size_t i = outputPath.find_last_of('/');
-    i = outputPath.find('.', i);
-    sobelPath.insert(i, "_sobel");
-    vertexPath.insert(i, "_vertices");
-    triangulatedPath.insert(i, "_triangulated");
+    outputPath = triangulatedPath = vertexPath = sobelPath
+      = parser.get("--output");
+    size_t lastSlash = outputPath.find_last_of('/');
+    if (lastSlash == string::npos)
+      lastSlash = 0;
+    size_t insertPos = outputPath.find('.', lastSlash);
+    sobelPath.insert(insertPos, "_sobel");
+    vertexPath.insert(insertPos, "_vertices");
+    triangulatedPath.insert(insertPos, "_triangulated");
   } else {
     outputPath = triangulatedPath = vertexPath = sobelPath = inputPath;
-    size_t i = outputPath.find_last_of('/');
-    i = outputPath.find('.', i);
-    sobelPath.insert(i, "_sobel");
-    vertexPath.insert(i, "_vertices");
-    triangulatedPath.insert(i, "_triangulated");
-    outputPath.insert(i, "_lowpoly");
+    size_t lastSlash = outputPath.find_last_of('/');
+    if (lastSlash == string::npos)
+      lastSlash = 0;
+    size_t insertPos = outputPath.find('.', lastSlash);
+    sobelPath.insert(insertPos, "_sobel");
+    vertexPath.insert(insertPos, "_vertices");
+    triangulatedPath.insert(insertPos, "_triangulated");
+    outputPath.insert(insertPos, "_triangulated");
   }
   // specify either target-input-width or preproc-scale, priority to former
   if (parser.present<int>("--target-input-width")) {

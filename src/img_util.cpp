@@ -28,7 +28,7 @@ namespace imgutil {
     const uint KERNEL_SIZE = 3;
     float kernelData[KERNEL_SIZE][KERNEL_SIZE] = {
       {-1, 0, 1},
-      {-1, 0, 1},
+      {-2, 0, 2},
       {-1, 0, 1},
     };
     // Normalize based on image type

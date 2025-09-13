@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
   string promptOpt_q = "▶ q: quit\n";
   string promptOpt_r = "▶ r: re-triangulate\n";
   string promptOpt_w = "▶ w: write output\n";
+  string promptOpt_a = "▶ a: write all intermediate pipeline steps + output\n";
   string promptOpt_u = "▶ u: upscale input\n";
   string promptOpt_d = "▶ d: downscale input\n";
   string promptOpt_U = "▶ U: upscale output\n";
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
     + promptOpt_q
     + promptOpt_r
     + promptOpt_w
+    + promptOpt_a
     + (o.targetInputWidth.has_value() ? "" : promptOpt_u)
     + (o.targetInputWidth.has_value() ? "" : promptOpt_d)
     + (o.targetOutputWidth.has_value() ? "" : promptOpt_U)
@@ -78,7 +80,7 @@ int main(int argc, char *argv[]) {
       printf("%s", prompt.c_str());
       char key = '_';
       bool breakOuter;
-      while (true) {
+      while (true) { // poll keyboard input in GUI window
         breakOuter = true;
         key = cv::waitKey(30);
         switch(key) {
@@ -93,10 +95,20 @@ int main(int argc, char *argv[]) {
           case 'w':
             cv::destroyAllWindows();
             if (o.all) {
+              if (!o.silent) {
+                printf("Writing Sobel output to %s\n",
+                    o.sobelPath.c_str());
+                printf("Writing vertex image to %s\n",
+                    o.vertexPath.c_str());
+                printf("Writing triangulation to %s\n",
+                    o.triangulatedPath.c_str());
+              }
               cv::imwrite(o.sobelPath, pipeline.sobelImg);
               cv::imwrite(o.vertexPath, pipeline.vertexImg);
               cv::imwrite(o.triangulatedPath, pipeline.triangulatedImg);
             }
+            if (!o.silent)
+              printf("Writing lowpoly output to %s\n", o.outputPath.c_str());
             cv::imwrite(o.outputPath, pipeline.outputImg);
             exit(0);
           case 'u':
@@ -124,10 +136,20 @@ int main(int argc, char *argv[]) {
       }
     } else {
       if (o.all) {
+        if (!o.silent) {
+          printf("Writing Sobel output to %s\n",
+              o.sobelPath.c_str());
+          printf("Writing vertex image to %s\n",
+              o.vertexPath.c_str());
+          printf("Writing triangulation to %s\n",
+              o.triangulatedPath.c_str());
+        }
         cv::imwrite(o.sobelPath, pipeline.sobelImg);
         cv::imwrite(o.vertexPath, pipeline.vertexImg);
         cv::imwrite(o.triangulatedPath, pipeline.triangulatedImg);
       }
+      if (!o.silent)
+        printf("Writing lowpoly output to %s\n", o.outputPath.c_str());
       cv::imwrite(o.outputPath, pipeline.outputImg);
     }
   } while(again);

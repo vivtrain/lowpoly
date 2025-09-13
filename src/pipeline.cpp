@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "cli_parser.h"
 #include "delaunay/delaunay.h"
+#include "delaunay/quad_edge_ref.h"
 #include "img_util.h"
 
 using namespace std;
@@ -88,6 +89,7 @@ void Pipeline::process(
   QuadEdgeRef *triangulation = delaunay::triangulate(vertices);
   vector<vector<cv::Point>> ogTriangles
     = delaunay::extractTriangles(triangulation), upscaledTris(ogTriangles);
+  freeGraph(triangulation); // don't leak memory :)
   if (!o.silent)
     printf("△ %zu Triangles generated\n", ogTriangles.size());
 
