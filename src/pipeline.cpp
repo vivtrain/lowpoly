@@ -15,13 +15,22 @@ void Pipeline::process(
     const std::string &basename,
     const CliOptions &o) {
 
+
   const cv::Size origSize(img.size());
+
+  float inScale = o.targetInputWidth.has_value()
+    ? static_cast<float>(o.targetInputWidth.value()) / origSize.width
+    : o.preprocScale;
+  float outScale = o.targetOutputWidth.has_value()
+    ? static_cast<float>(o.targetOutputWidth.value()) / origSize.width
+    : o.postprocScale * inScale;
+
   const cv::Size inputSize(
-      origSize.width * o.preprocScale,
-      origSize.height * o.preprocScale);
+      origSize.width * inScale,
+      origSize.height * inScale);
   const cv::Size outputSize(
-      inputSize.width * o.postprocScale,
-      inputSize.height * o.postprocScale);
+      origSize.width * outScale,
+      origSize.height * outScale);
   if (inputSize.width == 0 || inputSize.height == 0
       || outputSize.width == 0 || outputSize.height == 0)
     throw std::domain_error("Image left empty after scaling");
@@ -38,8 +47,8 @@ void Pipeline::process(
         "Post-process scaling: %.3f -> (%d, %d)\n",
         o.inputPath.c_str(),
         origSize.width, origSize.height,
-        o.preprocScale, inputSize.width, inputSize.height,
-        o.postprocScale, outputSize.width, outputSize.height
+        inScale, inputSize.width, inputSize.height,
+        outScale, outputSize.width, outputSize.height
   );
 
   // Scale the input

@@ -71,7 +71,7 @@ void CliOptions::parse(int argc, char* argv[]) {
   try {
     parser.parse_args(argc, argv);
   } catch (const exception &e) {
-    cerr << endl << parser.usage() << endl;
+    cerr << "\nMust provide an input image" << "\n\n" << parser.usage() << endl;
     exit(1);
   }
   // input path
@@ -89,7 +89,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     outputPath.insert(i, "_lowpoly");
   }
   // specify either target-input-width or preproc-scale, priority to former
-  if (parser.present("--target-input-width")) {
+  if (parser.present<int>("--target-input-width")) {
     int tiw = parser.get<int>("--target-input-width");
     if (tiw < 1)
       throw invalid_argument("Must supply a positive integer width for input");
@@ -101,7 +101,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     preprocScale = scale;
   }
   // specify either target-output-width or postproc-scale, priority to former
-  if (parser.present("--target-output-width")) {
+  if (parser.present<int>("--target-output-width")) {
     int tow = parser.get<int>("--target-output-width");
     if (tow < 1)
       throw invalid_argument("Must supply a positive integer width for output");

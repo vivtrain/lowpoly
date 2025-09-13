@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   try {
     opts.parse(argc, argv);
   } catch (const exception &e) {
-    cerr << "Error: " << e.what() << endl;
+    cerr << "CLI Error: " << e.what() << endl;
     exit(1);
   }
   const CliOptions &o(opts);
@@ -34,7 +34,8 @@ int main(int argc, char *argv[]) {
   string basename = o.inputPath.substr(o.inputPath.find_last_of('/') + 1);
   cv::Mat img = cv::imread(o.inputPath);
   if (img.empty()) {
-    cerr << "Error: A readable image was not found at " + o.inputPath << endl;
+    cerr << "Image Error: A readable image was not found at " + o.inputPath
+      << endl;
     exit(1);
   }
 
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]) {
     try {
       pipeline.process(img, basename, o);
     } catch (const exception &e) {
-      cerr << "Error: " << e.what() << endl;
+      cerr << "Pipeline Error: " << e.what() << endl;
       exit(1);
     }
 
@@ -64,42 +65,42 @@ int main(int argc, char *argv[]) {
           "▶ d: increase input downscale\n"
           "▶ U: increase output upscale\n"
           "▶ D: decrease output upscale (min of 1)\n");
-    }
-    char key = o.nonInteractive ? 'w' : '_';
-    bool breakOuter;
-    while (true) {
-      breakOuter = true;
-      key = cv::waitKey(30);
-      switch(key) {
-        case 'q':
-          cv::destroyAllWindows();
-          exit(0);
-        case 'r':
-          break;
-        case 'w':
-          {
-            cv::imwrite(o.outputPath, pipeline.outputImg);
-            again = false;
+      char key = '_';
+      bool breakOuter;
+      while (true) {
+        breakOuter = true;
+        key = cv::waitKey(30);
+        switch(key) {
+          case 'q':
+            cv::destroyAllWindows();
+            exit(0);
+          case 'r':
             break;
-          }
-        case 'u':
-          opts.preprocScale *= 2;
-          break;
-        case 'd':
-          opts.preprocScale /= 2;
-          break;
-        case 'U':
-          opts.postprocScale *= 2;
-          break;
-        case 'D':
-          opts.postprocScale /= 2;
-          break;
-        default:
-          breakOuter = false;
+          case 'w':
+            cv::destroyAllWindows();
+            cv::imwrite(o.outputPath, pipeline.outputImg);
+            exit(0);
+          case 'u':
+            opts.preprocScale *= 2;
+            break;
+          case 'd':
+            opts.preprocScale /= 2;
+            break;
+          case 'U':
+            opts.postprocScale *= 2;
+            break;
+          case 'D':
+            opts.postprocScale /= 2;
+            break;
+          default:
+            breakOuter = false;
+            break;
+        }
+        if (breakOuter)
           break;
       }
-      if (breakOuter)
-        break;
+    } else {
+      cv::imwrite(o.outputPath, pipeline.outputImg);
     }
   } while(again);
 }
