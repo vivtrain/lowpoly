@@ -77,7 +77,7 @@ void CliOptions::parse(int argc, char* argv[]) {
   // input path
   string inPath = parser.get("input");
   if (!ifstream(inPath).good())
-    throw invalid_argument(inputPath + " is not a readable file");
+    throw invalid_argument(inPath + " is not a readable file");
   inputPath = inPath; 
   // output path (default to same directory as input but with _lowpoly suffix)
   if (parser.present("--output")) {

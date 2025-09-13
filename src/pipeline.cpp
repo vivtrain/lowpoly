@@ -1,6 +1,8 @@
 #include "pipeline.h"
+#include <opencv2/core/base.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <stdexcept>
 #include "cli_parser.h"
 #include "delaunay/delaunay.h"
 #include "img_util.h"
@@ -20,6 +22,9 @@ void Pipeline::process(
   const cv::Size outputSize(
       inputSize.width * o.postprocScale,
       inputSize.height * o.postprocScale);
+  if (inputSize.width == 0 || inputSize.height == 0
+      || outputSize.width == 0 || outputSize.height == 0)
+    throw std::domain_error("Image left empty after scaling");
 
   if (!o.silent)
     printf("\n"
