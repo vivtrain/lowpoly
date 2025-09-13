@@ -15,7 +15,6 @@ void Pipeline::process(
     const std::string &basename,
     const CliOptions &o) {
 
-
   const cv::Size origSize(img.size());
 
   float inScale = o.targetInputWidth.has_value()
@@ -55,14 +54,14 @@ void Pipeline::process(
   cv::resize(img, inputImg, inputSize);
   if (!o.silent)
     printf("▲ Scaled for processing\n");
-  if (!o.nonInteractive)
+  if (o.interactive)
     cv::imshow(basename, inputImg);
 
   // Apply Sobel edge detector
   imgutil::sobelMagnitude(inputImg, sobelImg);
   if (!o.silent)
     printf("▲ Edges extracted\n");
-  if (!o.nonInteractive)
+  if (o.interactive)
     cv::imshow(basename + " - Sobel magnitude", sobelImg);
 
   // Apply non-max suppression
@@ -77,7 +76,7 @@ void Pipeline::process(
   vertexImg.at<float>({0, vertexImg.rows - 1}) =
   vertexImg.at<float>({vertexImg.cols - 1, 0}) =
   vertexImg.at<float>({vertexImg.cols - 1, vertexImg.rows - 1}) = maxValue;
-  if (!o.nonInteractive)
+  if (o.interactive)
     cv::imshow(basename + " - Extracted vertices", vertexImg);
 
   // Extract vertices from the vertex image
@@ -95,7 +94,7 @@ void Pipeline::process(
   // Scale the output back up
   for (auto &triangle : upscaledTris)
     for (auto &point : triangle)
-      point *= o.postprocScale;
+      point = point / inScale * outScale;
 
   // Build the triangulated image (just for show)
   triangulatedImg = cv::Mat::zeros(outputSize, CV_8UC3);
@@ -109,7 +108,7 @@ void Pipeline::process(
           2, cv::Scalar(255, 0, 255), cv::FILLED, cv::LINE_AA);
   if (!o.silent)
     printf("▲ Triangulated\n");
-  if (!o.nonInteractive)
+  if (o.interactive)
     cv::imshow(basename + " - Triangulated", triangulatedImg);
 
   // Mark any areas not triangulated bright red (known bug)
@@ -124,7 +123,7 @@ void Pipeline::process(
   }
   if (!o.silent)
     printf("▲ Output generated\n");
-  if (!o.nonInteractive)
+  if (o.interactive)
     cv::imshow(basename + " - Output", outputImg);
 
 }

@@ -40,12 +40,30 @@ int main(int argc, char *argv[]) {
   }
 
   // Set up the pipeline + interactive loop
-  bool again = !o.nonInteractive;
+  bool again = o.interactive;
   Pipeline pipeline;
+
+  // Set up prompt for interactive
+  string promptIntro = "\nIn any preview window:\n";
+  string promptOpt_q = "▶ q: quit\n";
+  string promptOpt_r = "▶ r: re-triangulate\n";
+  string promptOpt_w = "▶ w: write output\n";
+  string promptOpt_u = "▶ u: upscale input\n";
+  string promptOpt_d = "▶ d: downscale input\n";
+  string promptOpt_U = "▶ U: upscale output\n";
+  string promptOpt_D = "▶ D: downscale output\n";
+  string prompt = promptIntro
+    + promptOpt_q
+    + promptOpt_r
+    + promptOpt_w
+    + (o.targetInputWidth.has_value() ? "" : promptOpt_u)
+    + (o.targetInputWidth.has_value() ? "" : promptOpt_d)
+    + (o.targetOutputWidth.has_value() ? "" : promptOpt_U)
+    + (o.targetOutputWidth.has_value() ? "" : promptOpt_D);
 
   // Interactive state machine to preview and adjust output
   do {
-    if (!o.nonInteractive)
+    if (o.interactive)
       printf("\e[2J\e[H"); // clear screen
 
     // Do all the processing
@@ -56,15 +74,8 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
 
-    if (!o.nonInteractive) {
-      printf("\nIn any preview window:\n"
-          "▶ q: quit\n"
-          "▶ r: re-triangulate\n"
-          "▶ w: write output\n"
-          "▶ u: decrease input downscale (min of 1)\n"
-          "▶ d: increase input downscale\n"
-          "▶ U: increase output upscale\n"
-          "▶ D: decrease output upscale (min of 1)\n");
+    if (o.interactive) {
+      printf("%s", prompt.c_str());
       char key = '_';
       bool breakOuter;
       while (true) {
@@ -76,21 +87,33 @@ int main(int argc, char *argv[]) {
             exit(0);
           case 'r':
             break;
+          case 'a':
+            opts.all = true;
+            // fall through
           case 'w':
             cv::destroyAllWindows();
+            if (o.all) {
+              cv::imwrite(o.sobelPath, pipeline.sobelImg);
+              cv::imwrite(o.vertexPath, pipeline.vertexImg);
+              cv::imwrite(o.triangulatedPath, pipeline.triangulatedImg);
+            }
             cv::imwrite(o.outputPath, pipeline.outputImg);
             exit(0);
           case 'u':
-            opts.preprocScale *= 2;
+            if (!o.targetInputWidth.has_value())
+              opts.preprocScale *= 2;
             break;
           case 'd':
-            opts.preprocScale /= 2;
+            if (!o.targetInputWidth.has_value())
+              opts.preprocScale /= 2;
             break;
           case 'U':
-            opts.postprocScale *= 2;
+            if (!o.targetOutputWidth.has_value())
+              opts.postprocScale *= 2;
             break;
           case 'D':
-            opts.postprocScale /= 2;
+            if (!o.targetOutputWidth.has_value())
+              opts.postprocScale /= 2;
             break;
           default:
             breakOuter = false;
@@ -100,6 +123,11 @@ int main(int argc, char *argv[]) {
           break;
       }
     } else {
+      if (o.all) {
+        cv::imwrite(o.sobelPath, pipeline.sobelImg);
+        cv::imwrite(o.vertexPath, pipeline.vertexImg);
+        cv::imwrite(o.triangulatedPath, pipeline.triangulatedImg);
+      }
       cv::imwrite(o.outputPath, pipeline.outputImg);
     }
   } while(again);

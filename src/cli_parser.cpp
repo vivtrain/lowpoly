@@ -62,11 +62,11 @@ void CliOptions::parse(int argc, char* argv[]) {
     .default_value(saltPercent)
     .scan<'g', float>().nargs(1);
   parser.add_argument("--silent")
-    .help("Suppress normal output")
-    .flag();
-  parser.add_argument("--non-interactive")
-    .help("Suppress GUI and interactive loop. Directly write the output.")
-    .flag();
+    .help("Suppress normal output") .flag();
+  parser.add_argument("-i", "--interactive")
+    .help("Use GUI to preview and supply an interactive loop").flag();
+  parser.add_argument("-a", "--all")
+    .help("Write all intermediate outputs to files").flag();
 
   try {
     parser.parse_args(argc, argv);
@@ -81,11 +81,19 @@ void CliOptions::parse(int argc, char* argv[]) {
   inputPath = inPath; 
   // output path (default to same directory as input but with _lowpoly suffix)
   if (parser.present("--output")) {
-    outputPath = parser.get("--output");
-  } else {
-    outputPath = inputPath;
+    outputPath = triangulatedPath = vertexPath = sobelPath = parser.get("--output");
     size_t i = outputPath.find_last_of('/');
     i = outputPath.find('.', i);
+    sobelPath.insert(i, "_sobel");
+    vertexPath.insert(i, "_vertices");
+    triangulatedPath.insert(i, "_triangulated");
+  } else {
+    outputPath = triangulatedPath = vertexPath = sobelPath = inputPath;
+    size_t i = outputPath.find_last_of('/');
+    i = outputPath.find('.', i);
+    sobelPath.insert(i, "_sobel");
+    vertexPath.insert(i, "_vertices");
+    triangulatedPath.insert(i, "_triangulated");
     outputPath.insert(i, "_lowpoly");
   }
   // specify either target-input-width or preproc-scale, priority to former
@@ -148,7 +156,9 @@ void CliOptions::parse(int argc, char* argv[]) {
   saltPercent = sp;
   // silent
   silent = parser.get<bool>("--silent");
-  // non-interactive
-  nonInteractive = parser.get<bool>("--non-interactive");
+  // interactive
+  interactive = parser.get<bool>("--interactive");
+  // all
+  all = parser.get<bool>("--all");
 }
 

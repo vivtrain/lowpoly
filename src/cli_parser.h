@@ -7,6 +7,9 @@
 struct CliOptions {
   void parse(int argc, char *argv[]);
   std::string inputPath;
+  std::string sobelPath;
+  std::string vertexPath;
+  std::string triangulatedPath;
   std::string outputPath;
   float preprocScale = 1.0f;
   float postprocScale = 1.0f;
@@ -17,7 +20,8 @@ struct CliOptions {
   std::pair<uint, uint> anmsKernelRange {2, 7};
   float saltPercent = 0.001f;
   bool silent = false;
-  bool nonInteractive = false;
+  bool interactive = false;
+  bool all = false;
 };
 
 #endif // !CLI_PARSER_HPP
