@@ -101,8 +101,10 @@ void Pipeline::process(
   // Build the triangulated image (just for show)
   if (triangulatedImg.empty())
     triangulatedImg = cv::Mat::zeros(outputSize, CV_8UC3);
-  else
+  else {
+    triangulatedImg.create(outputSize, CV_8UC3);
     triangulatedImg.setTo(cv::Scalar(0, 0, 0));
+  }
   cv::drawContours(
       triangulatedImg, upscaledTris,
       -1, cv::Scalar(200, 100, 100), 1, cv::LINE_AA);
@@ -119,8 +121,10 @@ void Pipeline::process(
   // Mark any areas not triangulated bright red (known bug)
   if (outputImg.empty())
     outputImg = cv::Mat(outputSize, CV_8UC3, cv::Scalar(0, 0, 255));
-  else
+  else {
+    outputImg.create(outputSize, CV_8UC3);
     outputImg.setTo(cv::Scalar(0, 0, 0));
+  }
 
   // Generate the final lowpoly output
   for (uint i = 0; i < upscaledTris.size(); i++) {
