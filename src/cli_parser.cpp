@@ -27,51 +27,63 @@ void CliOptions::parse(int argc, char* argv[]) {
     .metavar("FILE");
   parser.add_argument("-o", "--output")
     .help("Output image path")
-    .metavar("PATH").nargs(1);
+    .metavar("PATH")
+    .nargs(1);
   parser.add_argument("-s", "--preproc-scale")
     .help("Initial preprocessing scale factor")
     .metavar("SCALE")
     .default_value(preprocScale)
-    .scan<'g', float>().nargs(1);
+    .scan<'g', float>()
+    .nargs(1);
   parser.add_argument("-w", "--target-input-width")
     .help("Scale the input image to this size before processing (overrides -s)")
     .metavar("WIDTH")
-    .scan<'i', int>().nargs(1);
+    .scan<'i', int>()
+    .nargs(1);
   parser.add_argument("-S", "--postproc-scale")
     .help("Final postprocessing scale factor")
     .metavar("SCALE")
     .default_value(postprocScale)
-    .scan<'g', float>().nargs(1);
+    .scan<'g', float>()
+    .nargs(1);
   parser.add_argument("-W", "--target-output-width")
     .help("Scale the output image to this size after processing (overrides -S)")
     .metavar("WIDTH")
-    .scan<'i', int>().nargs(1);
+    .scan<'i', int>()
+    .nargs(1);
   parser.add_argument("-t", "--edge-threshold")
     .help("Minimum edge strength on the interval [0.0, 1.0]")
     .metavar("THRESHOLD")
     .default_value(edgeThreshold)
-    .scan<'g', float>().nargs(1);
+    .scan<'g', float>()
+    .nargs(1);
   parser.add_argument("-a", "--edge-aoe")
     .help("Area of effect of edges in adaptive non-max suppression")
     .metavar("RADIUS")
     .default_value(edgeAOE)
-    .scan<'i', int>().nargs(1);
+    .scan<'i', int>()
+    .nargs(1);
   parser.add_argument("-k", "--anms-kernel-range")
     .help("Range of adaptive non-max suppression kernel radius")
     .metavar("RANGE")
     .default_value(to_string(anmsKernelRange.first)
-        + '-' + to_string(anmsKernelRange.second)).nargs(1);
+        + '-' + to_string(anmsKernelRange.second))
+    .nargs(1);
   parser.add_argument("-p", "--salt-percent")
     .help("Frequency of random salt added prior to triangulation")
     .metavar("PROBABILITY")
     .default_value(saltPercent)
-    .scan<'g', float>().nargs(1);
-  parser.add_argument("--silent")
-    .help("Suppress normal output") .flag();
+    .scan<'g', float>()
+    .nargs(1);
+  parser.add_argument("-q", "--silent")
+    .help("Suppress normal output")
+    .flag();
   parser.add_argument("-i", "--interactive")
-    .help("Use GUI to preview and supply an interactive loop").flag();
+    .help("Use GUI to preview and supply an interactive loop")
+    .flag();
   parser.add_argument("-a", "--all")
-    .help("Write all intermediate outputs to files").flag();
+    .help("Write all intermediate outputs to files")
+    .flag();
 
   try {
     parser.parse_args(argc, argv);

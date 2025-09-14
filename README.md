@@ -31,6 +31,8 @@ lowpoly [--help] [--version]
         [--salt-percent PROBABILITY] [--silent] [--interactive] [--all]
         FILE
 
+Low-poly image generator.
+
 Positional arguments:
   FILE                             Path to input image
 
@@ -46,7 +48,7 @@ Optional arguments:
   -a, --edge-aoe RADIUS            Area of effect of edges in adaptive non-max suppression [default: 5]
   -k, --anms-kernel-range RANGE    Range of adaptive non-max suppression kernel radius [default: "2-7"]
   -p, --salt-percent PROBABILITY   Frequency of random salt added prior to triangulation [default: 0.001]
-  --silent                         Suppress normal output
+  -q, --silent                     Suppress normal output
   -i, --interactive                Use GUI to preview and supply an interactive loop
   -a, --all                        Write all intermediate outputs to files
 ```
