@@ -61,19 +61,33 @@ Why do we need to detect edges in the first place? Well, edges are really good p
 There are many ways to approach the problem of edge detection, but since getting crisp, contiguous, binary edges (like [Canny](https://en.wikipedia.org/wiki/Canny_edge_detector)) is not the focus of this project, I opted for a very simple 2D filtering technique: [the Sobel operator](https://en.wikipedia.org/wiki/Sobel_operator). Applying the horizontal and vertical filters to our image results in a vector at each pixel, and we only care about the magnitude of this vector. In fact, the command-line option ```--edge-threshold``` directly operates on the magnitude of this Sobel vector, where ```0.0``` corresponds to a completely flat region and ```1.0``` corresponds to the maximum Euclidean distance between pixel vectors (e.g. an edge between black and white regions).
 
 <div align="center">
-  <img src="images/bluesky_sobel.jpg" alt="Original image" width="400px"/>
-  <p>Orignal image (photo of the Central Coast in California, USA)</p>
+  <img src="images/bluesky_sobel.jpg" alt="Sobel magnitude filter output" width="400px"/>
+  <p>Edge data extracted via Sobel filter. Bright spots have stronger edges; dark spots are comparatively flat.</p>
 </div>
 
 ### Adaptive Non-Max Suppression
 ```// TODO```
 
+<div align="center">
+  <img src="images/bluesky_vertices.jpg" alt="Adaptive non-max suppression + salt output (i.e. extracted vertices)" width="400px"/>
+  <p>Vertices extracted via adaptive non-max suppression. Random salt noise has been added as well to provide visual interest to the final output.</p>
+</div>
+
 ### Delaunay Triangulation
 ```// TODO```
+
+<div align="center">
+  <img src="images/bluesky_triangulated.jpg" alt="Delaunay triangulation of vertices" width="400px"/>
+  <p>Delaunay triangulation of extracted vertices. Each triangle can be extracted from this graph representation through a recursive traversal.</p>
+</div>
 
 ### Color Extraction
 ```// TODO```
 
+<div align="center">
+  <img src="images/bluesky_lowpoly.jpg" alt="Final low-poly output" width="400px"/>
+  <p>The final output image: an aesthetically pleasing mosiac of colored triangles, recognizable as the original image.</p>
+</div>
 
 
 
