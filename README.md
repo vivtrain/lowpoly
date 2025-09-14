@@ -56,7 +56,7 @@ Optional arguments:
 ## Pipeline
 <div align="center">
   <img src="images/bluesky.jpg" alt="Original image" width="400"/>
-  <p><em>Original image (photo of the Central Coast in California, USA)</em></p>
+  <p><em>Original image (I took this photo on the Central Coast in California)</em></p>
 </div>
 
 ### Overview
@@ -77,7 +77,7 @@ Optional arguments:
 
 <div align="center">
   <img src="images/bluesky_sobel.jpg" alt="Sobel magnitude filter output" width="400px"/>
-  <p><em>Edge data extracted via Sobel filter. Bright spots have stronger edges;dark spots are comparatively flat.</em></p>
+  <p><em>Edge data extracted via Sobel filter. Bright spots have stronger edges; dark spots are comparatively flat.</em></p>
 </div>
 
 ### Adaptive Non-Max Suppression
