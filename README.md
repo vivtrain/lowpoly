@@ -12,7 +12,6 @@ An OpenCV, C++ project that generates an aesthetic "low-poly" rendition of an im
     - [Adaptive Non-Max Suppression](#adaptive-non-max-suppression)
     - [Delaunay Triangulation](#delaunay-triangulation)
     - [Color Extraction](#color-extraction)
-4. [Delaunay Triangulation](#delaunay-triangulation)
 
 ## Project Dependencies
 ### OpenCV
@@ -22,7 +21,7 @@ An OpenCV, C++ project that generates an aesthetic "low-poly" rendition of an im
 Though this is primarily a CLI tool, it features GUI interactivity, so if you want that, be sure your environment can produce GUI windows (e.g. you may need to set up something like [X11](https://en.wikipedia.org/wiki/X_Window_System) if you are in a true CLI-only environment).
 
 ## Usage and Options
-This tool allows for a high degree of customizability through command-line options (shoutout to [p-ranav/argparse](https://github.com/p-ranav/argparse) for the excellent library). For example, it may be desirable to downscale the input for better computational performance while upscaling the output to preserve sharpness and acuity. Other options apply to specific pipeline parameters and are given reasonable defaults. A description of the pipeline can be found below.
+This tool allows for a high degree of customizability through command-line options (shoutout to [p-ranav/argparse](https://github.com/p-ranav/argparse) for the excellent library). For example, it may be desirable to downscale the input for better computational performance while upscaling the output to preserve sharpness and acuity. Other options apply to specific pipeline parameters and are given reasonable defaults. A brief description of the pipeline can be found below.
 ```
 lowpoly [--help] [--version]
         [--output PATH] [--preproc-scale SCALE]
@@ -55,7 +54,7 @@ Optional arguments:
 ## Pipeline
 <div align="center">
   <img src="images/bluesky.jpg" alt="Original image" width="400"/>
-  <p>Orignal image (photo of the Central Coast in California, USA)</p>
+  <p><em>Original image (photo of the Central Coast in California, USA)</em></p>
 </div>
 
 ### Overview
@@ -69,57 +68,46 @@ Optional arguments:
 8. Stitch together mosaic of colored triangles for final output :)
 
 ### Edge Detection
-Why do we need to detect edges in the first place? Well, edges are really good places to put vertices in the image we are trying to create. Placing vertices for the triangulation on edges preserves the shape of objects in the image. In essence, we want a "connect-the-dots" style graph to triangulate.
-
-There are many ways to approach the problem of edge detection, but since getting crisp, contiguous, binary edges (like [Canny](https://en.wikipedia.org/wiki/Canny_edge_detector)) is not the focus of this project, I opted for a very simple 2D filtering technique: [the Sobel operator](https://en.wikipedia.org/wiki/Sobel_operator). Applying the horizontal and vertical filters to our image results in a vector at each pixel, and we only care about the magnitude of this vector. In fact, the command-line option ```--edge-threshold``` directly operates on the magnitude of this Sobel vector, where ```0.0``` corresponds to a completely flat region and ```1.0``` corresponds to the maximum Euclidean distance between pixel vectors (e.g. an edge between black and white regions).
+- Uses [the Sobel operator](https://en.wikipedia.org/wiki/Sobel_operator).
+- ```--edge-threshold``` applies to the magnitude of difference vector at each pixel
+    - ```0.0``` &rArr; flat (i.e. no edge, zero vector)
+    - ```1.0``` &rArr; maximum edge (e.g. between black and white regions, max Euclidean distance between pixel vectors)
 
 <div align="center">
   <img src="images/bluesky_sobel.jpg" alt="Sobel magnitude filter output" width="400px"/>
-  <p>Edge data extracted via Sobel filter. Bright spots have stronger edges; dark spots are comparatively flat.</p>
+  <p><em>Edge data extracted via Sobel filter. Bright spots have <br/>stronger edges;dark spots are comparatively flat.</em></p>
 </div>
 
 ### Adaptive Non-Max Suppression
-```// TODO```
+- Radius of the kernel is adaptive based on proximity to strong edges
+- ```--edge-aoe``` affects proximity effect (larger &rArr; greater area of effect)
+- ```--anms-kernel-range``` affects the range to which edge effect is mapped
+- ```--salt-percent``` affects the amount of random noise added afterwards
 
 <div align="center">
   <img src="images/bluesky_vertices.jpg" alt="Adaptive non-max suppression + salt output (i.e. extracted vertices)" width="400px"/>
-  <p>Vertices extracted via adaptive non-max suppression. Random salt noise has been added as well to provide visual interest to the final output.</p>
+  <p><em>Vertices extracted via adaptive non-max suppression. Random salt <br/>noise has been added as well to provide visual interest to the final output.</em></p>
 </div>
 
 ### Delaunay Triangulation
-```// TODO```
+- [What is it?](https://en.wikipedia.org/wiki/Delaunay_triangulation)
+- ```delaunay``` module implements the divide-and-conquer technique [published by Guibas and Stolfi](https://dl.acm.org/doi/pdf/10.1145/282918.282923) with ```cv::Point``` as the payload data
+- Uses the simplified data structure designed by [Ian Henry](https://ianthehenry.com/posts/delaunay/) (this is an incredible read with interactive graphics!)
 
 <div align="center">
   <img src="images/bluesky_triangulated.jpg" alt="Delaunay triangulation of vertices" width="400px"/>
-  <p>Delaunay triangulation of extracted vertices. Each triangle can be extracted from this graph representation through a recursive traversal.</p>
+  <p><em>Delaunay triangulation of extracted vertices. Each triangle can be <br/>extracted from this graph representation through a recursive traversal.</em></p>
 </div>
 
 ### Color Extraction
-```// TODO```
+- Traverses Delaunay graph recursively to extract triangles
+- Uses ```cv::mean``` with a mask to average color in each region
+- Output can be scaled arbitrarily large (compute-bound) because extracted information is geometric before being rasterized
 
 <div align="center">
   <img src="images/bluesky_lowpoly.jpg" alt="Final low-poly output" width="400px"/>
-  <p>The final output image: an aesthetically pleasing mosiac of colored triangles, recognizable as the original image.</p>
+  <p><em>The final output image: an aesthetically pleasing mosiac of <br/>colored triangles, recognizable as the original image.</em></p>
 </div>
-
-
-## Delaunay Triangulation
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
