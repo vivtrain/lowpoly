@@ -35,7 +35,7 @@ namespace imgutil {
     cv::Mat sobX(KERNEL_SIZE, KERNEL_SIZE, CV_32F, kernelData);
     float max = getImageRange(src.type()).second;
     sobX /= max;
-    // Generate the vertical Soble kernel by simply transposing
+    // Generate the vertical Sobel kernel by simply transposing the horizontal
     cv::Mat sobY;
     cv::transpose(sobX, sobY);
     // Convolve the kernels with src

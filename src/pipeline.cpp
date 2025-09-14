@@ -99,7 +99,10 @@ void Pipeline::process(
       point = point / inScale * outScale;
 
   // Build the triangulated image (just for show)
-  triangulatedImg = cv::Mat::zeros(outputSize, CV_8UC3);
+  if (triangulatedImg.empty())
+    triangulatedImg = cv::Mat::zeros(outputSize, CV_8UC3);
+  else
+    triangulatedImg.setTo(cv::Scalar(0, 0, 0));
   cv::drawContours(
       triangulatedImg, upscaledTris,
       -1, cv::Scalar(200, 100, 100), 1, cv::LINE_AA);
@@ -114,7 +117,10 @@ void Pipeline::process(
     cv::imshow(basename + " - Triangulated", triangulatedImg);
 
   // Mark any areas not triangulated bright red (known bug)
-  outputImg = cv::Mat(outputSize, CV_8UC3, cv::Scalar(0, 0, 255));
+  if (outputImg.empty())
+    outputImg = cv::Mat(outputSize, CV_8UC3, cv::Scalar(0, 0, 255));
+  else
+    outputImg.setTo(cv::Scalar(0, 0, 0));
 
   // Generate the final lowpoly output
   for (uint i = 0; i < upscaledTris.size(); i++) {
@@ -128,5 +134,8 @@ void Pipeline::process(
   if (o.interactive)
     cv::imshow(basename + " - Output", outputImg);
 
+  // Convert the 32F images to 8U for writing
+  sobelImg.convertTo(sobelImg, CV_8U, 255);
+  vertexImg.convertTo(vertexImg, CV_8U, 255);
 }
 

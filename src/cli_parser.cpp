@@ -104,7 +104,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     sobelPath.insert(insertPos, "_sobel");
     vertexPath.insert(insertPos, "_vertices");
     triangulatedPath.insert(insertPos, "_triangulated");
-    outputPath.insert(insertPos, "_triangulated");
+    outputPath.insert(insertPos, "_lowpoly");
   }
   // specify either target-input-width or preproc-scale, priority to former
   if (parser.present<int>("--target-input-width")) {
