@@ -40,6 +40,11 @@ Optional arguments:
 ```
 
 ## Pipeline
+<div align="center">
+  <img src="images/bluesky.jpg" alt="Original image" width="400"/>
+  <p>Orignal image (photo of the Central Coast in California, USA)</p>
+</div>
+
 ### Overview
 1. Read in image and apply any scaling.
 2. Extract edge information via Sobel filter.
@@ -55,13 +60,10 @@ Why do we need to detect edges in the first place? Well, edges are really good p
 
 There are many ways to approach the problem of edge detection, but since getting crisp, contiguous, binary edges (like [Canny](https://en.wikipedia.org/wiki/Canny_edge_detector)) is not the focus of this project, I opted for a very simple 2D filtering technique: [the Sobel operator](https://en.wikipedia.org/wiki/Sobel_operator). Applying the horizontal and vertical filters to our image results in a vector at each pixel, and we only care about the magnitude of this vector. In fact, the command-line option ```--edge-threshold``` directly operates on the magnitude of this Sobel vector, where ```0.0``` corresponds to a completely flat region and ```1.0``` corresponds to the maximum Euclidean distance between pixel vectors (e.g. an edge between black and white regions).
 
-```
-Input image
-```
-
-```
-Edge data
-```
+<div align="center">
+  <img src="images/bluesky_sobel.jpg" alt="Original image" width="400px"/>
+  <p>Orignal image (photo of the Central Coast in California, USA)</p>
+</div>
 
 ### Adaptive Non-Max Suppression
 ```// TODO```
