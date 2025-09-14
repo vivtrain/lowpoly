@@ -77,7 +77,7 @@ Optional arguments:
 
 <div align="center">
   <img src="images/bluesky_sobel.jpg" alt="Sobel magnitude filter output" width="400px"/>
-  <p><em>Edge data extracted via Sobel filter. Bright spots have <br/>stronger edges;dark spots are comparatively flat.</em></p>
+  <p><em>Edge data extracted via Sobel filter. Bright spots have stronger edges;dark spots are comparatively flat.</em></p>
 </div>
 
 ### Adaptive Non-Max Suppression
@@ -88,7 +88,7 @@ Optional arguments:
 
 <div align="center">
   <img src="images/bluesky_vertices.jpg" alt="Adaptive non-max suppression + salt output (i.e. extracted vertices)" width="400px"/>
-  <p><em>Vertices extracted via adaptive non-max suppression. Random salt <br/>noise has been added as well to provide visual interest to the final output.</em></p>
+  <p><em>Vertices extracted via adaptive non-max suppression. Random salt noise has been added as well to provide visual interest to the final output.</em></p>
 </div>
 
 ### Delaunay Triangulation
@@ -98,7 +98,7 @@ Optional arguments:
 
 <div align="center">
   <img src="images/bluesky_triangulated.jpg" alt="Delaunay triangulation of vertices" width="400px"/>
-  <p><em>Delaunay triangulation of extracted vertices. Each triangle can be <br/>extracted from this graph representation through a recursive traversal.</em></p>
+  <p><em>Delaunay triangulation of extracted vertices. Each triangle can be extracted from this graph representation through a recursive traversal.</em></p>
 </div>
 
 ### Color Extraction
@@ -108,7 +108,7 @@ Optional arguments:
 
 <div align="center">
   <img src="images/bluesky_lowpoly.jpg" alt="Final low-poly output" width="400px"/>
-  <p><em>The final output image: an aesthetically pleasing mosiac of <br/>colored triangles, recognizable as the original image.</em></p>
+  <p><em>The final output image: an aesthetically pleasing mosiac of colored triangles, recognizable as the original image.</em></p>
 </div>
 
 
