@@ -1,6 +1,19 @@
 # lowpoly
 An OpenCV, C++ project that generates an aesthetic "low-poly" rendition of an image using a Delaunay triangulation algorithm.
 
+## Table of Contents
+1. [Project Dependencies](#project-dependencies)
+    - [OpenCV](#opencv)
+    - [GUI Features](#gui-features)
+2. [Usage and Options](#usage-and-options)
+3. [Pipeline](#pipeline)
+    - [Overview](#overview)
+    - [Edge Detection](#edge-detection)
+    - [Adaptive Non-Max Suppression](#adaptive-non-max-suppression)
+    - [Delaunay Triangulation](#delaunay-triangulation)
+    - [Color Extraction](#color-extraction)
+4. [Delaunay Triangulation](#delaunay-triangulation)
+
 ## Project Dependencies
 ### OpenCV
 [OpenCV](https://opencv.org/about/) is the premier open-source computer vision library. It abstracts and optimizes matrix operations commonly used in image processing and machine learning. For this project, the main modules (e.g. core, imgproc, imgcodecs, and highgui) should be sufficient. [Find Releases here](https://opencv.org/releases/) or search your favorite package manager. All this project cares about is that CMake can ```find_package``` it.
@@ -89,6 +102,8 @@ There are many ways to approach the problem of edge detection, but since getting
   <p>The final output image: an aesthetically pleasing mosiac of colored triangles, recognizable as the original image.</p>
 </div>
 
+
+## Delaunay Triangulation
 
 
 
