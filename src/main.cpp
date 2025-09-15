@@ -11,6 +11,16 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <chrono>
+
+inline std::chrono::time_point<std::chrono::steady_clock> now() {
+  return std::chrono::steady_clock::now();
+}
+
+inline double elapsed(
+    std::chrono::time_point<std::chrono::steady_clock> since) {
+  return std::chrono::duration_cast<std::chrono::milliseconds>(now() - since).count() / 1000.0;
+}
 
 #include "cli_parser.h"
 #include "img_util.h"
@@ -70,7 +80,10 @@ int main(int argc, char *argv[]) {
 
     // Do all the processing
     try {
+      auto start = now();
       pipeline.process(img, basename, o);
+      if (!o.silent)
+        printf("⧖ Processed in %f seconds\n", elapsed(start));
     } catch (const exception &e) {
       cerr << "Pipeline Error: " << e.what() << endl;
       exit(1);
