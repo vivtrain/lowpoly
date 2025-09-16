@@ -139,7 +139,7 @@ int main () {
   cout << "ALL TESTS PASSED!" << endl;
   cout << "(r)etry/(q)uit" << endl;
   while (true) {
-    const int IMG_HEIGHT = 100, IMG_WIDTH = 100, N_POINTS = 100, SCALE = 10;
+    const int IMG_HEIGHT = 1000, IMG_WIDTH = 2000, N_POINTS = 1000, SCALE = 1;
     unordered_set<cv::Point, PointHash> pointSet;
     pointSet.insert({1, 1});
     pointSet.insert({IMG_WIDTH-1, 1});

@@ -1,12 +1,14 @@
 #include "delaunay/delaunay.h"
 #include "delaunay/quad_edge_ref.h"
-#include <algorithm>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -25,15 +27,15 @@ namespace delaunay {
   };
 
   bool isCCW(Point a, Point b, Point c) {
-    float xa = a.x, ya = a.y;
-    float xb = b.x, yb = b.y;
-    float xc = c.x, yc = c.y;
-    float data[3][3] = {
+    double xa = a.x, ya = a.y;
+    double xb = b.x, yb = b.y;
+    double xc = c.x, yc = c.y;
+    double data[3][3] = {
       { xa, ya, 1 },
       { xb, yb, 1 },
       { xc, yc, 1 },
     };
-    Mat ccwTest(3, 3, CV_32F, data);
+    Mat ccwTest(3, 3, CV_64F, data);
     return determinant(ccwTest) > 0;
   }
 
@@ -58,17 +60,17 @@ namespace delaunay {
   }
 
   bool inCircle(Point a, Point b, Point c, Point test) {
-    float xa = a.x, ya = a.y, a2 = a.dot(a);
-    float xb = b.x, yb = b.y, b2 = b.dot(b);
-    float xc = c.x, yc = c.y, c2 = c.dot(c);
-    float xt = test.x, yt = test.y, t2 = test.dot(test);
-    float data[4][4] = {
+    double xa = a.x, ya = a.y, a2 = a.dot(a);
+    double xb = b.x, yb = b.y, b2 = b.dot(b);
+    double xc = c.x, yc = c.y, c2 = c.dot(c);
+    double xt = test.x, yt = test.y, t2 = test.dot(test);
+    double data[4][4] = {
       { xa, ya, a2, 1 },
       { xb, yb, b2, 1 },
       { xc, yc, c2, 1 },
       { xt, yt, t2, 1 },
     };
-    Mat inCircleMat(4, 4, CV_32F, data);
+    Mat inCircleMat(4, 4, CV_64F, data);
     double inCircleDet = determinant(inCircleMat);
     return isCCW(a, b, c) ? inCircleDet > 0 : inCircleDet < 0;
   }
@@ -168,12 +170,15 @@ namespace delaunay {
     }
   }
 
-  QuadEdgeRef* triangulate(vector<Point> points) {
-    sort(points.begin(), points.end(),
-        [](const Point &a, const Point &b) {
-          return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
-        });
-    return triangulate_recurse(points, 0, points.size()-1).first;
+
+  QuadEdgeRef* triangulate(const vector<Point> &points) {
+    auto comparePoints = [](const Point &a, const Point &b) {
+      return (a.x == b.x) ? (a.y < b.y) : (a.x < b.x);
+    };
+    set<Point, decltype(comparePoints)>
+      pointSet(points.begin(), points.end(), comparePoints);
+    vector<Point> uniqueSorted(pointSet.begin(), pointSet.end());
+    return triangulate_recurse(uniqueSorted, 0, uniqueSorted.size()-1).first;
   }
 
   struct EdgeHash {

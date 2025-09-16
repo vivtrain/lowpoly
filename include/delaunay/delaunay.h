@@ -11,7 +11,7 @@ namespace delaunay {
   bool isLeftOf(cv::Point test, quadedge::QuadEdgeRef *edge);
   bool isRightOf(cv::Point test, quadedge::QuadEdgeRef *edge);
   bool isAbove(quadedge::QuadEdgeRef *test, quadedge::QuadEdgeRef *baseL);
-  quadedge::QuadEdgeRef* triangulate(std::vector<cv::Point> points);
+  quadedge::QuadEdgeRef* triangulate(const std::vector<cv::Point> &points);
   std::vector<std::vector<cv::Point>>
     extractTriangles(quadedge::QuadEdgeRef *edge);
 }
