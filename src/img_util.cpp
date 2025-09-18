@@ -77,7 +77,7 @@ namespace imgutil {
       for (int c = 0; c < nCols; c++) {
         int kRadius = linearMap(
             blurred.at<uchar>(r, c),
-            0, 255,
+            255, 0, // invert the input!
             kernelRange.first , kernelRange.second);
         int rMin = std::max(0, r - kRadius);
         int rMax = std::min(nRows - 1, r + kRadius);
