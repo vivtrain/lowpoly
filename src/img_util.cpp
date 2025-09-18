@@ -68,7 +68,9 @@ namespace imgutil {
 
     cv::Mat blurred = srcMat.clone();
     const int gkSize = edgeAOERadius*2 + 1;
-    cv::GaussianBlur(blurred, blurred, cv::Size(gkSize, gkSize), edgeAOERadius);
+    cv::GaussianBlur(blurred, blurred,
+        cv::Size(gkSize, gkSize),
+        float(edgeAOERadius) * 2/3);
 
     const int nRows = src.rows(), nCols = src.cols();
     const auto [min, max] = getImageRange(src.type());
