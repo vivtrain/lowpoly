@@ -45,7 +45,7 @@ Optional arguments:
   -S, --postproc-scale SCALE       Final postprocessing scale factor [default: 1]
   -W, --target-output-width WIDTH  Scale the output image to this size after processing (overrides -S)
   -t, --edge-threshold THRESHOLD   Minimum edge strength on the interval [0.0, 1.0] [default: 0.4]
-  -a, --edge-aoe RADIUS            Area of effect of edges in adaptive non-max suppression [default: 5]
+  -e, --edge-aoe RADIUS            Area of effect of edges in adaptive non-max suppression [default: 5]
   -k, --anms-kernel-range RANGE    Range of adaptive non-max suppression kernel radius [default: "2-7"]
   -p, --salt-percent PROBABILITY   Frequency of random salt added prior to triangulation [default: 0.001]
   -q, --silent                     Suppress normal output

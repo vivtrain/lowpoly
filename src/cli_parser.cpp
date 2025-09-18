@@ -57,7 +57,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     .default_value(edgeThreshold)
     .scan<'g', float>()
     .nargs(1);
-  parser.add_argument("-a", "--edge-aoe")
+  parser.add_argument("-e", "--edge-aoe")
     .help("Area of effect of edges in adaptive non-max suppression")
     .metavar("RADIUS")
     .default_value(edgeAOE)
