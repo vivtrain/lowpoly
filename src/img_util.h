@@ -14,7 +14,6 @@ namespace imgutil {
       cv::InputArray src,
       cv::OutputArray dst,
       const std::pair<int, int> &kernelRange,
-      const int edgeAOERadius,
       const double threshold);
   void salt(cv::Mat img, const float percent);
   cv::Scalar avgColorInPoly(cv::Mat img, std::vector<cv::Point> polygon);

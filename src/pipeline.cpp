@@ -67,10 +67,9 @@ void Pipeline::process(
 
   // Apply non-max suppression
   imgutil::adaptiveNonMaxSuppress(
-      sobelImg, vertexImg,
-      o.anmsKernelRange, o.edgeAOE, o.edgeThreshold);
+      sobelImg, vertexImg, o.anmsKernelRange,o.edgeThreshold);
   // Salt the image with extra vertices at random
-  imgutil::salt(vertexImg, o.saltPercent);
+  imgutil::salt(vertexImg, o.saltRatio);
   // Include the corners
   float maxValue = imgutil::getImageRange(vertexImg.type()).second;
   vertexImg.at<float>({0, 0}) =

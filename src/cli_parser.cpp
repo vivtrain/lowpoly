@@ -19,9 +19,9 @@ void CliOptions::parse(int argc, char* argv[]) {
   programName = programName.substr(nameStart);
   argparse::ArgumentParser parser(programName);
   parser.set_usage_max_line_width(80);
-  parser.add_usage_newline();
   parser.add_description("Low-poly image generator.");
 
+  parser.add_usage_newline();
   parser.add_argument("input")
     .help("Path to input image")
     .metavar("FILE");
@@ -29,6 +29,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     .help("Output image path")
     .metavar("PATH")
     .nargs(1);
+  parser.add_usage_newline();
   parser.add_argument("-s", "--preproc-scale")
     .help("Initial preprocessing scale factor")
     .metavar("SCALE")
@@ -40,6 +41,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     .metavar("WIDTH")
     .scan<'i', int>()
     .nargs(1);
+  parser.add_usage_newline();
   parser.add_argument("-S", "--postproc-scale")
     .help("Final postprocessing scale factor")
     .metavar("SCALE")
@@ -51,30 +53,28 @@ void CliOptions::parse(int argc, char* argv[]) {
     .metavar("WIDTH")
     .scan<'i', int>()
     .nargs(1);
+  parser.add_usage_newline();
   parser.add_argument("-t", "--edge-threshold")
     .help("Minimum edge strength on the interval [0.0, 1.0]")
     .metavar("THRESHOLD")
     .default_value(edgeThreshold)
     .scan<'g', float>()
     .nargs(1);
-  parser.add_argument("-e", "--edge-aoe")
-    .help("Area of effect of edges in adaptive non-max suppression")
-    .metavar("RADIUS")
-    .default_value(edgeAOE)
-    .scan<'i', int>()
-    .nargs(1);
+  parser.add_usage_newline();
   parser.add_argument("-k", "--anms-kernel-range")
     .help("Range of adaptive non-max suppression kernel radius")
     .metavar("RANGE")
     .default_value(to_string(anmsKernelRange.first)
         + '-' + to_string(anmsKernelRange.second))
     .nargs(1);
-  parser.add_argument("-p", "--salt-percent")
-    .help("Frequency of random salt added prior to triangulation")
-    .metavar("PROBABILITY")
-    .default_value(saltPercent)
+  parser.add_usage_newline();
+  parser.add_argument("-r", "--salt")
+    .help("Proportion (expressed as decimal) of random salt added")
+    .metavar("RATIO")
+    .default_value(saltRatio)
     .scan<'g', float>()
     .nargs(1);
+  parser.add_usage_newline();
   parser.add_argument("-q", "--silent")
     .help("Suppress normal output")
     .flag();
@@ -147,11 +147,6 @@ void CliOptions::parse(int argc, char* argv[]) {
   if (et < 0.0f || et > 1.0f)
     throw invalid_argument("Edge threshold must be within [0.0, 1.0]");
   edgeThreshold = et;
-  // edge aoe
-  int aoe = parser.get<int>("--edge-aoe");
-  if (aoe < 1)
-    throw invalid_argument("Must supply a positive integer for edge AoE");
-  edgeAOE = aoe;
   // aNMS kernel range: parse string in the form "min-max"
   string akr = parser.get("--anms-kernel-range");
   invalid_argument anmsExcp("Must supply an positive integer range (e.g. 2-7)");
@@ -172,10 +167,10 @@ void CliOptions::parse(int argc, char* argv[]) {
     throw anmsExcp;
   anmsKernelRange = {start, end};
   // salt percent
-  float sp = parser.get<float>("--salt-percent");
-  if (sp < 0.0f || sp > 1.0f)
+  float sr = parser.get<float>("--salt-percent");
+  if (sr < 0.0f || sr > 1.0f)
     throw invalid_argument("Salt percent value must be within [0.0, 1.0]");
-  saltPercent = sp;
+  saltRatio = sr;
   // silent
   silent = parser.get<bool>("--silent");
   // interactive

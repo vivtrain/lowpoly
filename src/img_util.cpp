@@ -57,7 +57,6 @@ namespace imgutil {
       cv::InputArray src,
       cv::OutputArray dst,
       const std::pair<int, int> &kernelRange,
-      const int edgeAOERadius,
       const double threshold) {
 
     cv::Mat srcMat = src.getMat();
@@ -66,19 +65,13 @@ namespace imgutil {
     // Make a temp output buffer
     cv::Mat output = cv::Mat::zeros(src.size(), src.type());
 
-    cv::Mat blurred = srcMat.clone();
-    const int gkSize = edgeAOERadius*2 + 1;
-    cv::GaussianBlur(blurred, blurred,
-        cv::Size(gkSize, gkSize),
-        float(edgeAOERadius) * 2/3);
-
     const int nRows = src.rows(), nCols = src.cols();
     const auto [min, max] = getImageRange(src.type());
 
     for (int r = 0; r < nRows; r++) {
       for (int c = 0; c < nCols; c++) {
         int kRadius = linearMap(
-            blurred.at<uchar>(r, c),
+            srcMat.at<uchar>(r, c),
             255, 0, // invert the input!
             kernelRange.first , kernelRange.second);
         int rMin = std::max(0, r - kRadius);

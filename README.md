@@ -24,14 +24,14 @@ Though this is primarily a CLI tool, it features GUI interactivity, so if you wa
 This tool allows for a high degree of customizability through command-line options (shoutout to [p-ranav/argparse](https://github.com/p-ranav/argparse) for the excellent library). For example, it may be desirable to downscale the input for better computational performance while upscaling the output to preserve sharpness and acuity. Other options apply to specific pipeline parameters and are given reasonable defaults. A brief description of the pipeline can be found below.
 ```
 lowpoly [--help] [--version]
-        [--output PATH] [--preproc-scale SCALE]
-        [--target-input-width WIDTH] [--postproc-scale SCALE]
-        [--target-output-width WIDTH] [--edge-threshold THRESHOLD]
-        [--edge-aoe RADIUS] [--anms-kernel-range RANGE]
-        [--salt-percent PROBABILITY] [--silent] [--interactive] [--all]
-        FILE
-
-Low-poly image generator.
+               [--output PATH]
+               [--preproc-scale SCALE] [--target-input-width WIDTH]
+               [--postproc-scale SCALE] [--target-output-width WIDTH]
+               [--edge-threshold THRESHOLD]
+               [--anms-kernel-range RANGE]
+               [--salt RATIO]
+               [--silent] [--interactive] [--all]
+               FILE
 
 Positional arguments:
   FILE                             Path to input image
@@ -45,12 +45,12 @@ Optional arguments:
   -S, --postproc-scale SCALE       Final postprocessing scale factor [default: 1]
   -W, --target-output-width WIDTH  Scale the output image to this size after processing (overrides -S)
   -t, --edge-threshold THRESHOLD   Minimum edge strength on the interval [0.0, 1.0] [default: 0.4]
-  -e, --edge-aoe RADIUS            Area of effect of edges in adaptive non-max suppression [default: 5]
   -k, --anms-kernel-range RANGE    Range of adaptive non-max suppression kernel radius [default: "2-7"]
-  -p, --salt-percent PROBABILITY   Frequency of random salt added prior to triangulation [default: 0.001]
+  -r, --salt RATIO                 Proportion (expressed as decimal) of random salt added [default: 0.001]
   -q, --silent                     Suppress normal output
   -i, --interactive                Use GUI to preview and supply an interactive loop
   -a, --all                        Write all intermediate outputs to files
+
 ```
 
 ## Pipeline

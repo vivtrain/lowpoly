@@ -16,9 +16,8 @@ struct CliOptions {
   std::optional<uint> targetInputWidth;
   std::optional<uint> targetOutputWidth;
   float edgeThreshold = 0.4f;
-  int edgeAOE = 5;
   std::pair<uint, uint> anmsKernelRange {2, 7};
-  float saltPercent = 0.001f;
+  float saltRatio = 0.001f;
   bool silent = false;
   bool interactive = false;
   bool all = false;
