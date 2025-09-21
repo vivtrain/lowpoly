@@ -167,7 +167,7 @@ void CliOptions::parse(int argc, char* argv[]) {
     throw anmsExcp;
   anmsKernelRange = {start, end};
   // salt percent
-  float sr = parser.get<float>("--salt-percent");
+  float sr = parser.get<float>("--salt");
   if (sr < 0.0f || sr > 1.0f)
     throw invalid_argument("Salt percent value must be within [0.0, 1.0]");
   saltRatio = sr;
