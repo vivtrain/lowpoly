@@ -82,9 +82,8 @@ Optional arguments:
 
 ### Adaptive Non-Max Suppression
 - Radius of the kernel is adaptive based on proximity to strong edges
-- ```--edge-aoe``` affects proximity effect (larger &rArr; greater area of effect)
-- ```--anms-kernel-range``` affects the range to which edge effect is mapped
-- ```--salt-percent``` affects the amount of random noise added afterwards
+- ```--anms-kernel-range``` affects the mapping from edge strength to NMS kernel size
+- ```--salt``` affects the amount of random noise added afterwards
 
 <div align="center">
   <img src="images/bluesky_vertices.jpg" alt="Adaptive non-max suppression + salt output (i.e. extracted vertices)" width="400px"/>
