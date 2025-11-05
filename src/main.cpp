@@ -125,12 +125,16 @@ int main(int argc, char *argv[]) {
             cv::imwrite(o.outputPath, pipeline.outputImg);
             exit(0);
           case 'u':
-            if (!o.targetInputWidth.has_value())
+            if (!o.targetInputWidth.has_value()) {
               opts.preprocScale *= 2;
+              opts.saltRatio /= 2;
+            }
             break;
           case 'd':
-            if (!o.targetInputWidth.has_value())
+            if (!o.targetInputWidth.has_value()) {
               opts.preprocScale /= 2;
+              opts.saltRatio *= 2;
+            }
             break;
           case 'U':
             if (!o.targetOutputWidth.has_value())

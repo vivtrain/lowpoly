@@ -1,5 +1,6 @@
 #include "img_util.h"
 #include <opencv2/core.hpp>
+#include <opencv2/core/base.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/highgui.hpp>
@@ -46,6 +47,7 @@ namespace imgutil {
     cv::cvtColor(dstY, dstY, cv::COLOR_BGR2GRAY);
     // Calculate Euclidean 2-Norm at each pixel
     cv::magnitude(dstX, dstY, dst);
+    cv::normalize(dst, dst.getMatRef(), 0.0, 1.0, cv::NORM_MINMAX);
   }
 
   inline int linearMap(int toMap, int inMin, int inMax, int outMin, int outMax) {
